@@ -1,0 +1,29 @@
+{
+	"name": "Neu Helper",
+	"version": "0.1",
+	"manifest_version": 2,
+	"icons": {
+		"16": "img/icon16.png",
+		"48": "img/icon48.png",
+		"128": "img/icon128.png"
+	},
+	"options_page": "options/options.html",
+	"homepage_url": "http://www.evecalm.com",
+	"description": "Make U feel better in Neu. Corp.",
+	"browser_action": {
+		"default_icon": "img/icon48.png",
+		"default_title": "Have a Nice Day!",
+		"default_popup": "popup/popup.html"
+	},
+	"permissions": ["*://*/*","tabs","bookmarks","cookies","notifications"],
+	"background": {
+		"page":"background/background.html"
+	},
+	"update_url":"http://10.10.93.90/tools/ext/kao.xml",
+	"web_accessible_resources": [
+	  "img/icon16.png",
+	  "img/icon48.png",
+	  "img/icon128.png",
+	  "basic/notification.html"
+	]
+}
