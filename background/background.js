@@ -18,42 +18,66 @@ function doAttendance (config) {
 		start = config.htmlstr.indexOf('<body>') + 6,
 		end = config.htmlstr.indexOf('</body>'),
 		accountAccessAble = false,
-		checkintime = localdata_attr('settings','checkintime'),
-		checktype = localdata_attr('settings','checktype'),
+		settings = localdata_attr('settings'),
 		checked = false,
-		timesetting = null;
-	config.htmlstr = config.htmlstr.substring(start,end);
-	config.htmlstr = config.htmlstr.replace(/<img[^>]+>/g,''); //remove img tag
-	config.htmlstr = config.htmlstr.replace(/background="[^"]+"/g,''); //remove background image
-	if (-1 == config.htmlstr.indexOf('name="attendanceForm"')) {
+		timesetting = null,
+		checktype = 0,
+		htmlstr = '',
+		htmlstr2 = '';
+	if (settings && settings.checktype) {
+		checktype = settings.checktype;
+	}
+	if (!checktype) {
+		return;
+	}
+	htmlstr =  config.htmlstr;
+	htmlstr = htmlstr.substring(start,end);
+	htmlstr = htmlstr.replace(/<img[^>]+>/g,''); //remove img tag
+	htmlstr = htmlstr.replace(/background="[^"]+"/g,''); //remove background image
+	if (-1 == htmlstr.indexOf('name="attendanceForm"')) {
 		localdata_attr('settings','checktype',0);
 		push_notification({body:"用户名密码不好使啊！请在选项页中再次输入您的用户名及密码！"});
 		return;
 	}
 	div = document.createElement('div');
-	div.innerHTML = config.htmlstr;
+	div.innerHTML = htmlstr;
 	table = div.querySelectorAll('table')[8]; // focus on attendance table
 	table = table.querySelectorAll('tr');
 	if ((CHCKIN & checktype) == CHCKIN) {
-		checked = table[2] ? true : false;
-		timesetting = localdata_attr(settings,'checkintime');
-		checkAttendaceTime (timesetting,checked,config.htmlstr);
+		checked = false;
+		htmlstr2 = htmlstr;
+		if (table[2]) {
+			checked = true;
+			htmlstr2 = table[2].innerText.replace(/\s+/g,' ');
+		}
+		timesetting = settings.checktime['in'];
+		checkAttendaceTime (timesetting,checked,htmlstr2);
 	}
 
 	if ((CHCKOUT & checktype) == CHCKOUT) {
-		checked = table[4] ? true : false;
-		timesetting = localdata_attr('settings','checkouttime');
-		checkAttendaceTime (timesetting,checked,config.htmlstr);
+		checked = false;
+		htmlstr2 = htmlstr;
+		if (table[4]) {
+			checked = true;
+			htmlstr2 = table[4].innerText.replace(/\s+/g,' ');
+		}
+		timesetting = settings.checktime['out'];
+		checkAttendaceTime (timesetting,checked,htmlstr2);
 	}
-
 	div = null;
 	table = null;
+	config = null;
 }
 
 function checkAttendaceTime (timesetting,checked,html) {
+	var log = '';
 	if (checked) {
-		logmsg({log:'has checked in'});
-		setCheckinoutTimer(timesetting,checked);
+		log = '已经' + timesetting.name + '。';
+		if (html.length < 100) {
+			log += '打卡信息为:<br />' + html;
+		}
+		logmsg({'log':log});
+		setCheckinoutTimer(timesetting,true);
 	} else{
 		var d = new Date(),
 			day = d.getDay(),
@@ -62,21 +86,21 @@ function checkAttendaceTime (timesetting,checked,html) {
 			noweekend = localdata_attr('settings','noweekend');
 		if (noweekend) {
 			if (day == 6 || day === 0) {
-				setCheckinoutTimer(timesetting,checked);
+				setCheckinoutTimer(timesetting,true);
 				return false;
 			}
 		}
 		if (hour < timesetting.hour || (hour == timesetting.hour && minute < timesetting.minminute)) {
-			setCheckinoutTimer();
+			setCheckinoutTimer(timesetting,false);
 		} else if(hour == timesetting.hour && minute >= timesetting.minminute && minute <= timesetting.maxminute) {
 			__doAttendance(html);
-			setCheckinoutTimer(timesetting,checked);
+			setCheckinoutTimer(timesetting,true);
 		} else {
-			var log = '已经过了' + timesetting.name + '时间，未自动打卡';
+			log = '已经过了' + timesetting.name + '时间，未自动打卡';
 			logmsg({'log':log,'type':'warning'});
 			log += ' 现在时间： ' + formatDate(d);
 			push_notification({body:log,tile:'自动打卡通知',time:false});
-			setCheckinoutTimer(timesetting,checked);
+			setCheckinoutTimer(timesetting,true);
 		}
 	}
 }
@@ -106,8 +130,8 @@ function __doAttendance (html) {
 function setCheckinoutTimer (timesetting,checked) {
 	var d = new Date(),
 		day = d.getDay(),
-		hour = date.getHours(),
-		minute = date.getMinutes(),
+		hour = d.getHours(),
+		minute = d.getMinutes(),
 		time = timesetting.hour,
 		noweekend = localdata_attr('settings','noweekend'),
 		newTime,
@@ -127,15 +151,9 @@ function setCheckinoutTimer (timesetting,checked) {
 		}
 	} else {
 		if (noweekend) {
-			if (day == 5) {
-				time += 24 + 24 + 24;
-			} else if(day == 6) {
+			if (day == 6) {
 				time += 24 + 24;
-			} else {
-				time += 24;
-			}
-		} else {
-			if (hour > timesetting.hour || (hour == timesetting.hour && minute > timesetting.minminute)) {
+			} else if(day === 0) {
 				time += 24;
 			}
 		}
@@ -148,7 +166,7 @@ function setCheckinoutTimer (timesetting,checked) {
 	time += Math.random() * 10 | 0; // genertate a random time, 
 									// make attendance time between 8:15 AM and 8:30;
 	time *= 60 * 1000; // make it to microsecond
-	timer[timesetting.type] = setTimeout(loginKaoqin,time);
+	timer[timesetting.type] = setTimeout(autoCheckInOut,time);
 	newTime = new Date(d.getTime() + time);
 	log = '下次' + timesetting.name + '时间为：' + formatDate(newTime);
 	logmsg({'log':log});
@@ -177,7 +195,7 @@ function init () {
 			push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
 		} else {
 			if(localdata_attr('settings','checktype')){
-				loginKaoqin({callback:doAttendance});
+				autoCheckInOut();
 			}
 		}
 	}else{
@@ -185,44 +203,70 @@ function init () {
 	}
 }
 
+function autoCheckInOut () {
+	loginKaoqin({callback:doAttendance});
+}
 
 window.addEventListener("storage", function  (event) {
-	var checktype = localdata_attr('settings','checktype'),
-		available = localdata_attr('account','available');
+	var available,
+		checktype,
+		newValue = null,
+		oldValue = null;
+	if (event.oldValue == event.newValue) {
+		return;
+	}
+	oldValue = decryptData(event.oldValue);
+	newValue = decryptData(event.newValue);
 	if (event.key == 'settings') {
-		if ((checktype & CHCKIN) != CHCKIN) {
-			clearTimeout(timer['in']);
-			timer['in'] = null;
-			logmsg({'log':'关闭了自动签到'});
-		} else{
-			logmsg({'log':'启用了自动签到'});
+		if (!newValue.checktype) {
+			if (oldValue && (oldValue.checktype != newValue.checktype)) {
+				clearTimeout(timer['in']);
+				clearTimeout(timer['out']);
+				logmsg({'log':'关闭了自动打卡'});
+			}
+			return;
 		}
-
-		if ((checktype & CHCKOUT) != CHCKOUT) {
+		available = localdata_attr('account','available');
+		if (!available) {
+			logmsg({'log':'因账户设置错误，自动打卡启用失败。','type':'warning'});
+			clearTimeout(timer['in']);
 			clearTimeout(timer['out']);
-			timer['out'] = null;
-			logmsg({'log':'关闭了自动签退'});
+			return;
+		}
+		if (oldValue && (oldValue.checktype == newValue.checktype)) {
+			if (oldValue.noweekend == newValue.noweekend) {
+				logmsg({'log':'更新了自动打卡时间'});
+			} else {
+				if (newValue.noweekend) {
+					logmsg({'log':'自动打卡设置更改周末不自动打卡'});
+				} else {
+					logmsg({'log':'自动打卡设置更改周末自动打卡'});
+				}
+			}
 		} else {
-			logmsg({'log':'启动了自动签退'});
+			switch(newValue.checktype) {
+				case 1:
+					logmsg({'log':'启用了自动签到'});
+					clearTimeout(timer['out']);
+					break;
+				case 2:
+					logmsg({'log':'启用了自动签退'});
+					clearTimeout(timer['in']);
+					break;
+				case 3:
+					logmsg({'log':'启用了自动签到、签退'});
+					break;
+			}
 		}
 		loginKaoqin({callback:doAttendance});
 	} else if (event.key == 'account') {
-		if (!available) {
-			if ((checktype & CHCKIN) == CHCKIN) {
-				logmsg({'log':'账户配置错误，已取消自动签到','type':'warning'});
-				clearTimeout(timer['in']);
-				timer['in'] = null;
-			}
-
-			if ((checktype & CHCKOUT) == CHCKOUT) {
-				logmsg({'log':'账户配置错误，已取消自动签退','type':'warning'});
-				clearTimeout(timer['out']);
-				timer['out'] = null;
-			}
+		checktype = localdata_attr('settings','checktype');
+		if (!newValue.available && !checktype) {
+			logmsg({'log':'因账户配置错误，已取消自动打卡','type':'warning'});
+			clearTimeout(timer['in']);
+			clearTimeout(timer['out']);
 		}
 	}
-	console.log('end storage event');
-	// loginKaoqin();
 }, false);
 
 init();

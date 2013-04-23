@@ -35,7 +35,6 @@ var urls = {
 (function (window) { // init db handle
 	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
 	db.transaction(function  (tx) {
-		var d = new Date();
 		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id unique,log,time,type)');
 	});
 })(window);
@@ -208,7 +207,7 @@ function __loginKaoqin (config) {
 		end = config.htmlstr.indexOf('"',start),
 		cookie = config.htmlstr.substring(start,end),
 		tmp = "KEY" + tiket,
-		usrinfo = localdata_attr('account','default');
+		usrinfo = config.account || localdata_attr('account','default');
 	login_data[tmp] = "";
 	login_data["neusoft_key"] = "ID" + tiket + "PWD" + tiket;
 	tmp = 'ID' + cookie;
@@ -224,7 +223,6 @@ function __loginKaoqin (config) {
 		data: login_data,
 		success: function  (html) {
 			config.htmlstr = html;
-			console.log(config);
 			config.callback(config);
 		}
 	});
@@ -247,5 +245,17 @@ function logmsg (data) { //write log to database
 		db.transaction(function  (tx) {
 			tx.executeSql('INSERT INTO klog (id,log,time,type) VALUES (?,?,?,?)',[+d,data.log,formatDate(d),data.type]);
 		});
+	}
+}
+
+//decrypt data
+function decryptData (data) {
+	if (data) {
+		data = decrypt_str(data);
+		data = decodeURIComponent(data);
+		data = JSON.parse(data);
+		return data;
+	} else {
+		return null;
 	}
 }

@@ -72,7 +72,7 @@ function checkTimeSetting (time) {
 
 	time.range = parseInt(time.range,10);
 	if (isNaN(time.range) || time.range < 4 || (time.minminute + time.range) > time.maxminute) {
-		tip.removeClass('info').addClass('warning').html('自动' + typename + '时间范围需不小于4分钟，并不得超过公司' + typename[type] + '时间范围').fadeIn();
+		tip.removeClass('info').addClass('warning').html('自动' + typename + '时间范围需不小于4分钟，并不得超过公司' + typename + '时间范围').fadeIn();
 		return false;
 	}
 
@@ -86,7 +86,7 @@ function clearSettingTip () {
 			btn.next().fadeOut(function  () {
 				btn.removeClass('warning').addClass('info');
 			});
-		},2000);
+		},4000);
 }
 
 function initSettingTab () {
@@ -111,7 +111,7 @@ function initSettingTab () {
 		noweekend = settings.noweekend;
 	}
 
-	if (!settings.checkintime) {
+	if (!settings.checktime || !settings.checktime['in']) {
 		checkintime = {
 			hour: 8,
 			minminute: 15,
@@ -119,9 +119,9 @@ function initSettingTab () {
 			range: 10
 		};
 	} else {
-		checkintime = settings.checkintime;
+		checkintime = settings.checktime['in'];
 	}
-	if (!settings.checkouttime) {
+	if (!settings.checktime || !settings.checktime['out']) {
 		checkouttime = {
 			hour: 17,
 			minminute: 30,
@@ -129,7 +129,7 @@ function initSettingTab () {
 			range: 10
 		};
 	} else {
-		checkouttime = settings.checkouttime;
+		checkouttime = settings.checktime['out'];
 	}
 	$('#enable-autocheckin').prop('checked',autocheckEnabled);
 	$('#checkin-type').val(checktype + '');
@@ -201,20 +201,25 @@ $(function  ($) {
 			data['username'] = $.trim($('#username').val());
 			data['password'] = $.trim($('#password').val());
 			data['nickname'] = $.trim($('#nickname').val());
-			localdata_attr('account','default',data);
+			// localdata_attr('account','default',data);
 			loginKaoqin({
 				savebtn: $(this),
-				data: data,
+				account: data,
 				callback:function  (config) {
-					var available = false;
+					var available = false,
+						account = {};
 					if (-1 == config.htmlstr.indexOf('name="attendanceForm"')) {
 						config.savebtn.next().removeClass('info').addClass('warning').html('用户名密码不好使啊！再试下呗！').fadeIn();
 					} else {
 						available = true;
-						logmsg({log:'更新用户信息成功，当前用户名为' + config.data.username});
+						logmsg({log:'更新用户信息成功，当前用户名为' + config.account.username});
 						config.savebtn.next().html('账户设置正常！保存成功！').fadeIn();
 					}
-					localdata_attr('account','available',available);
+					account['default'] = config.account;
+					account['available'] = available;
+					account = encodeURIComponent(JSON.stringify(account));
+					account = encrypt_str(account);
+					localStorage.setItem('account',account);
 					setTimeout(function () {
 						config.savebtn.attr('disabled',false);
 						config.savebtn.text('保存',false);
@@ -222,8 +227,7 @@ $(function  ($) {
 							$(this).removeClass('warning').addClass('info');
 						});
 						config = null;
-					},2000);
-
+					},4000);
 				}});
 
 		}
@@ -233,13 +237,14 @@ $(function  ($) {
 		var checkin = false,
 			checkout = false,
 			checktype = $('#checkin-type').val(),
-			noweekend = $('#noweekend').prop('checked');
-
+			noweekend = $('#noweekend').prop('checked'),
+			checktime = localdata_attr('settings') || {};
+			checktime = checktime['checktime'] || {},
+			settings  = {};
 		checktype = parseInt(checktype,10);
 		if (!$('#enable-autocheckin').prop('checked')) {
 			checktype = 0;
 		}
-
 		if (isNaN(checktype) || checktype < 0 || checktype > 3) {
 			$(this).next().removeClass('info').addClass('warning').html('打卡类型错误！').fadeIn();
 			clearSettingTip();
@@ -257,6 +262,9 @@ $(function  ($) {
 				clearSettingTip();
 				return;
 			}
+			checktime['in'] = checkin;
+		} else {
+			delete checktime['in'];
 		}
 
 		if (CHCKOUT == (checktype & CHCKOUT) ) {
@@ -271,22 +279,17 @@ $(function  ($) {
 				clearSettingTip();
 				return;
 			}
-		}
-
-		if (checkin) {
-			localdata_attr('settings','checkintime',checkin);
+			checktime['out'] = checkout;
 		} else {
-			localdata_remove('settings','checkintime');
+			delete checktime['out'];
 		}
-
-		if (checkout) {
-			localdata_attr('settings','checkouttime',checkout);
-		} else {
-			localdata_remove('settings','checkouttime');
-		}
-
-		localdata_attr('settings','checktype',checktype);
-		localdata_attr('settings','noweekend',noweekend);
+		settings.checktype = checktype;
+		settings.checktype = checktype;
+		settings.noweekend = noweekend;
+		settings.checktime = checktime;
+		settings = encodeURIComponent(JSON.stringify(settings));
+		settings = encrypt_str(settings);
+		localStorage.setItem('settings',settings);
 		$(this).next().removeClass('warning').addClass('info').html('保存成功！').fadeIn();
 		clearSettingTip();
 	});

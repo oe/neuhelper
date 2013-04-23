@@ -173,4 +173,12 @@ fieldset legend{
 .log-wrapper table tr.success{
 	background-color: #dff0d8;
 }
-
+.ol-about{
+	padding-left: 30px;
+}
+.ol-about li p{
+	color: #777;
+}
+.about{
+	color: #444;
+}

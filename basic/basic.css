@@ -8,7 +8,7 @@ body{
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: 'Century Gothic', 'Microsoft YaHei', Verdana;;
 	font-size: 16px;
 }
 .span-1{
@@ -26,7 +26,12 @@ body{
 	clear: both;
 	content: "";
 }
-
+a:hover, a:active {
+color: #005580;
+}
+a:link, a:visited {
+color: #08c;
+}
 label{
 	display: inline-block;
 	padding: 7px 10px;

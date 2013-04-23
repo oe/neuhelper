@@ -14,7 +14,7 @@
 		<div class="arrow"></div>
 		<ul class="nav">
 			<li><a href="#accounts">账户设置</a></li>
-			<li><a href="#settings">Enable</a></li>
+			<li><a href="#settings">自动打卡</a></li>
 			<li><a href="#kaoqin-log">打卡日志</a></li>
 			<li><a href="#about">关于</a></li>
 		</ul>
@@ -71,7 +71,7 @@
 						<label><input type="checkbox" id="noweekend">周末不签到</label>
 					</div>
 					<fieldset id="checkin">
-						<legend>Checkin</legend>
+						<legend>签到时间</legend>
 						<div class="input checkin">
 							<label class="span-1">公司签到时间</label>
 							<input type="text" id="inhour">时
@@ -87,7 +87,7 @@
 						</div>
 					</fieldset>
 					<fieldset id="checkout">
-						<legend>Checkout</legend>
+						<legend>签退时间</legend>
 						<div class="input checkin">
 							<label class="span-1">公司签退时间</label>
 							<input type="text" id="outhour">时
@@ -124,24 +124,35 @@
 				</div>
 			</div>
 		</div>
-		<div id="about">
+		<div id="about" class="about">
 			<div class="setting-item">
 				<div class="title">
 					关于
 				</div>
 				<div class="setting-content">
-					about
+					本扩展为Saiya业余完成。<br>
+					本扩展可以实现以下功能：
+					<ol class="ol-about">
+						<li>
+							一键登录Neusoft常用网站
+							<p>包括考勤，日报，EHR，Portal</p>
+						</li>
+						<li>
+							自动打卡
+							<p>可以自动签到签退，并可以设定周末不打卡。所有打卡相关的记录均可以在选项页面中的“打卡日志”中查看到。</p>
+						</li>
+					</ol>
+					本扩展已开源，扩展官网：<a href="http://app.evecalm.com/neuhelper" target="_blank">http://app.evecalm.com/neuhelper </a> <br>
+					我的个人网站：<a href="http://www.evecalm.com" target="_blank"> 夏影 http://www.evecalm.com</a>
 				</div>
 			</div>
 			<div class="setting-item">
 				<div class="title">
-					隐私政策
+					声明
 				</div>
 				<div class="setting-content">
-					<div class="input">
-						<!-- <label class="span-1" for="unick">您的昵称</label>
-						<input type="text" id="unick" placeholder="用户"> -->
-					</div>
+					<p>本人不保证本扩展相关功能在任何时候都有效，请不要过分依赖本扩展。因使用本扩展所带来的任何风险由个人承担，本人概不负责。</p>
+					<p>账户密码信息以加密形式存放在浏览器本地，不会出现隐私泄露问题。</p>
 				</div>
 			</div>
 			<div class="setting-item">
@@ -149,10 +160,20 @@
 					更新历史
 				</div>
 				<div class="setting-content">
-					<div class="input">
-						<!-- <label class="span-1" for="unick">您的昵称</label>
-						<input type="text" id="unick" placeholder="用户"> -->
-					</div>
+					<ol class="ol-about">
+						<li>
+							V 0.3 @2013/04/23
+							<p>增加自签退功能，并可以设置周末不打卡</p>
+						</li>
+						<li>
+							V 0.2 @2013/04/10
+							<p>增加自动签到功能</p>
+						</li>
+						<li>
+							V 0.1 @2013/01/08
+							<p>增加一键登录考勤、日报、EHR、Portal的功能</p>
+						</li>
+					</ol>
 				</div>
 			</div>
 		</div>
