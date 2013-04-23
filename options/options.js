@@ -1,62 +1,172 @@
-$(function  () {
-	var hash = window.location.hash ? window.location.hash : 'accounts';
 
-	function selectAllLog () {
-		if (db) {
-			db.transaction(function (tx) {
-				tx.executeSql('SELECT * FROM klog ORDER BY id DESC', [], function (tx, results) {
-					var len = results.rows.length,
-						i = 0,
-						msg = '';
-					msg += '<table>';
-					if (len) {
-						for (i = 0; i < len; ++i) {
-							msg += '<tr class="' + results.rows.item(i).type + '">';
-							msg += '<td>' + results.rows.item(i).time + '</td>';
-							msg += '<td>' + results.rows.item(i).log + '</td></tr>';
-						}
-					} else{
-						msg += '<tr class="info"><td colspan="2">No logs has been found yet!</td></tr>';
+function selectAllLog () {
+	if (db) {
+		db.transaction(function (tx) {
+			tx.executeSql('SELECT * FROM klog ORDER BY id DESC', [], function (tx, results) {
+				var len = results.rows.length,
+					i = 0,
+					msg = '';
+				msg += '<table>';
+				if (len) {
+					for (i = 0; i < len; ++i) {
+						msg += '<tr class="' + results.rows.item(i).type + '">';
+						msg += '<td>' + results.rows.item(i).time + '</td>';
+						msg += '<td>' + results.rows.item(i).log + '</td></tr>';
 					}
-					msg += '</table>';
-					document.querySelector('#ans').innerHTML = msg;
-				}, null);
-			});
+				} else {
+					msg += '<tr class="info"><td colspan="2">还没有日志呢！</td></tr>';
+				}
+				msg += '</table>';
+				document.querySelector('#table-log').innerHTML = msg;
+			}, null);
+		});
+	}
+}
+
+function clearAllLog () {
+	if (db) {
+		db.transaction(function  (tx) {
+			tx.executeSql('DELETE FROM klog');
+		});
+	}
+}
+function check_inputs (obj) {
+	var ret = true;
+	var contents = obj.parents('.setting-content');
+	contents = contents.find('input');
+	var val = '',input=null;
+	for (var i = contents.length - 1; i >= 0; i--) {
+		input = $(contents[i]);
+		if('' === $.trim(input.val())){
+			ret = false;
+			input.val('').addClass('warning');
+			input.next().text('填个空呗！').fadeIn();
 		}
+	}
+	return ret;
+}
+
+function checkTimeSetting (time) {
+	var tip = $('#save-settings').next(),
+		typenames = {'in':'签到','out':'签退'},
+		typename = typenames[time.type];
+
+	if (time.type != 'in' && time.type != 'out') {
+		tip.removeClass('info').addClass('warning').html(typename + '签到类型不对啊，你改网页了？').fadeIn();
+		return false;
+	}
+	time.hour = parseInt(time.hour,10);
+	if (isNaN(time.hour) || time.hour < 0 || time.hour > 23) {
+		tip.removeClass('info').addClass('warning').html(typename + '时钟数需在0~23之间').fadeIn();
+		return false;
+	}
+	time.minminute = parseInt(time.minminute,10);
+	time.maxminute = parseInt(time.maxminute,10);
+	if(isNaN(time.minminute) || time.minminute < 0 ||
+		time.minminute > 59 || isNaN(time.maxminute) ||
+		time.minminute < 0 || time.minminute > 59 ||
+		(time.minminute + 4 ) >= time.maxminute){
+		tip.removeClass('info').addClass('warning').html(typename + '分钟数需在0~59之间，并请确保分钟数之差大于4分钟').fadeIn();
+		return false;
 	}
 
-	function check_inputs (obj) {
-		var ret = true;
-		var contents = obj.parents('.setting-content');
-		contents = contents.find('input');
-		var val = '',input=null;
-		for (var i = contents.length - 1; i >= 0; i--) {
-			input = $(contents[i]);
-			if('' === $.trim(input.val())){
-				ret = false;
-				input.val('').addClass('warning');
-			}
-		}
-		return ret;
+	time.range = parseInt(time.range,10);
+	if (isNaN(time.range) || time.range < 4 || (time.minminute + time.range) > time.maxminute) {
+		tip.removeClass('info').addClass('warning').html('自动' + typename + '时间范围需不小于4分钟，并不得超过公司' + typename[type] + '时间范围').fadeIn();
+		return false;
 	}
 
-	function removeAllLog () {
-		if (db) {
-			db.transaction(function  (tx) {
-				tx.executeSql('DELETE FROM klog');
+	time['name'] = typename;
+	return time;
+}
+
+function clearSettingTip () {
+	var btn = $('#save-settings');
+	setTimeout(function () {
+			btn.next().fadeOut(function  () {
+				btn.removeClass('warning').addClass('info');
 			});
-		}
+		},2000);
+}
+
+function initSettingTab () {
+	var settings = localdata_attr('settings'),
+		checkintime,
+		checkouttime,
+		checktype,
+		noweekend,
+		autocheckEnabled = false;
+	settings = settings || {};
+
+	if (!settings.checktype) {
+		checktype = 3;
+	} else {
+		checktype = settings.checktype;
+		autocheckEnabled = true;
 	}
+
+	if (!settings.noweekend) {
+		noweekend = true;
+	} else {
+		noweekend = settings.noweekend;
+	}
+
+	if (!settings.checkintime) {
+		checkintime = {
+			hour: 8,
+			minminute: 15,
+			maxminute: 50,
+			range: 10
+		};
+	} else {
+		checkintime = settings.checkintime;
+	}
+	if (!settings.checkouttime) {
+		checkouttime = {
+			hour: 17,
+			minminute: 30,
+			maxminute: 40,
+			range: 10
+		};
+	} else {
+		checkouttime = settings.checkouttime;
+	}
+	$('#enable-autocheckin').prop('checked',autocheckEnabled);
+	$('#checkin-type').val(checktype + '');
+	$('#noweekend').prop('checked',noweekend);
+	$('#inhour').val(checkintime.hour);
+	$('#inminminute').val(checkintime.minminute);
+	$('#inmaxminute').val(checkintime.maxminute);
+	$('#inrange').val(checkintime.range);
+	$('#outhour').val(checkouttime.hour);
+	$('#outminminute').val(checkouttime.minminute);
+	$('#outmaxminute').val(checkouttime.maxminute);
+	$('#outrange').val(checkouttime.range);
+	if (!autocheckEnabled) {
+		$('#settings input,#settings select').attr('disabled',true);
+		$('#enable-autocheckin').attr('disabled',false);
+		return;
+	}
+
+	if (CHCKIN != (checktype & CHCKIN) ) {
+		$('#checkin').hide();
+	}
+
+	if (CHCKOUT != (checktype & CHCKOUT) ) {
+		$('#checkout').hide();
+	}
+}
+
+$(function  ($) {
+	var hash = window.location.hash ? window.location.hash : '#accounts';
 
 	$('.sidebar .nav li a').on('click',function  () {
 		var target = $(this).attr('href');
-		target = target.substring(1);
 		$('.sidebar .nav li a.current').removeClass('current');
 		$('.contents div.selected').removeClass('selected');
-		var href = ($(this).attr('href')).substring(1);
 		$(this).addClass('current');
-		$('#' + href).addClass('selected');
-		console.log(target);
+		$(target).addClass('selected');
+		target = target.substring(1);
 		switch(target) {
 			case 'accounts':
 				var account = localdata_attr('account','default');
@@ -67,37 +177,17 @@ $(function  () {
 				}
 				break;
 			case 'settings':
-				var settings = localdata_attr('settings'),
-					checkintime;
-				if (typeof settings.autocheckin === 'undefined') {
-					settings.autocheckin = false;
-					localdata_attr('settings','autocheckin',settings.autocheckin);
-				}
-				if (typeof settings.checkintime === 'undefined') {
-					checkintime = {
-						hour: 8,
-						minminute: 15,
-						maxminute: 50,
-						range: 10
-					};
-					localdata_attr('settings','checkintime',checkintime);
-				} else {
-					checkintime = settings.checkintime;
-				}
-				console.log(checkintime);
-				$('#enable-autocheckin').attr('checked',settings.autocheckin);
-				$('#hour').val(checkintime.hour);
-				$('#minminute').val(checkintime.minminute);
-				$('#maxminute').val(checkintime.maxminute);
-				$('#range').val(checkintime.range);
-				$('#range-tip').text('从' + checkintime.hour + '时' + checkintime.minminute + '分开始');
+				initSettingTab();
+				break;
+			case 'kaoqin-log':
+				selectAllLog();
 				break;
 			default:
 				break;
 		}
 	});
 
-	$('.sidebar .nav li a[href="#' + hash + '"]')[0].click();
+	$('.sidebar .nav li a[href="' + hash + '"]')[0].click();
 
 	$('#accounts input').on('focus',function  () {
 		$(this).removeClass('warning');
@@ -114,14 +204,17 @@ $(function  () {
 			localdata_attr('account','default',data);
 			loginKaoqin({
 				savebtn: $(this),
+				data: data,
 				callback:function  (config) {
-					console.log(config);
+					var available = false;
 					if (-1 == config.htmlstr.indexOf('name="attendanceForm"')) {
 						config.savebtn.next().removeClass('info').addClass('warning').html('用户名密码不好使啊！再试下呗！').fadeIn();
-						localdata_attr('settings','autocheckin',false);
 					} else {
+						available = true;
+						logmsg({log:'更新用户信息成功，当前用户名为' + config.data.username});
 						config.savebtn.next().html('账户设置正常！保存成功！').fadeIn();
 					}
+					localdata_attr('account','available',available);
 					setTimeout(function () {
 						config.savebtn.attr('disabled',false);
 						config.savebtn.text('保存',false);
@@ -137,51 +230,94 @@ $(function  () {
 	});
 
 	$('#save-settings').on('click',function  () {
-		var hour = $('#hour').val(),
-			minminute = $('#minminute').val(),
-			maxminute = $('#maxminute').val(),
-			range = $('#range').val(),
-			checktype = $('input[name="checkin-type"]:checked').val(),
-			btn = $(this);
-		hour = parseInt(hour,10);
-		console.log(range);
-		if (isNaN(hour) || hour < 0 || hour > 23) {
-			$(this).next().removeClass('info').addClass('warning').html('时钟数需在0~23之间').fadeIn();
-		} else {
-			minminute = parseInt(minminute,10);
-			maxminute = parseInt(maxminute,10);
-			if(isNaN(minminute) || minminute < 0 ||
-				minminute > 59 || isNaN(maxminute) ||
-				minminute < 0 || minminute > 59 ||
-				(minminute + 4 ) >= maxminute){
-				$(this).next().removeClass('info').addClass('warning').html('分钟数需在0~59之间，并请确保分钟数之差大于4分钟').fadeIn();
-			} else {
-				range = parseInt(range,10);
-				if (isNaN(range) || range < 4 || (minminute + range) > maxminute) {
-					$(this).next().removeClass('info').addClass('warning').html('自动打卡时间范围需不小于4分钟，并不得超过公司打卡时间范围').fadeIn();
-				} else {
-					if (checktype != 'in' && checktype != 'out') {
-						$(this).next().removeClass('info').addClass('warning').html('签到类型不对啊，你改网页了？').fadeIn();
-					} else {
-						var checkintime = {
-							'hour': hour,
-							'minminute': minminute,
-							'maxminute': maxminute,
-							'range': range
-						};
-						localdata_attr('settings','checkintime',checkintime);
-						localdata_attr('settings','checktype',checktype);
-						localdata_attr('settings','autocheckin',$('#enable-autocheckin').prop('checked'));
-						$(this).next().removeClass('warning').addClass('info').html('保存成功！').fadeIn();
-					}
-				}
+		var checkin = false,
+			checkout = false,
+			checktype = $('#checkin-type').val(),
+			noweekend = $('#noweekend').prop('checked');
+
+		checktype = parseInt(checktype,10);
+		if (!$('#enable-autocheckin').prop('checked')) {
+			checktype = 0;
+		}
+
+		if (isNaN(checktype) || checktype < 0 || checktype > 3) {
+			$(this).next().removeClass('info').addClass('warning').html('打卡类型错误！').fadeIn();
+			clearSettingTip();
+			return;
+		}
+		if (CHCKIN == (checktype & CHCKIN) ) {
+			checkin = checkTimeSetting({
+				hour:$('#inhour').val(),
+				minminute:$('#inminminute').val(),
+				maxminute:$('#inmaxminute').val(),
+				range:$('#inrange').val(),
+				type:'in'
+			},'in');
+			if (!checkin) {
+				clearSettingTip();
+				return;
 			}
 		}
-		setTimeout(function () {
-			btn.next().fadeOut(function  () {
-				btn.removeClass('warning').addClass('info');
-			});
-		},2000);
+
+		if (CHCKOUT == (checktype & CHCKOUT) ) {
+			checkout = checkTimeSetting({
+				hour:$('#outhour').val(),
+				minminute:$('#outminminute').val(),
+				maxminute:$('#outmaxminute').val(),
+				range:$('#outrange').val(),
+				type:'out'
+			},'out');
+			if (!checkout) {
+				clearSettingTip();
+				return;
+			}
+		}
+
+		if (checkin) {
+			localdata_attr('settings','checkintime',checkin);
+		} else {
+			localdata_remove('settings','checkintime');
+		}
+
+		if (checkout) {
+			localdata_attr('settings','checkouttime',checkout);
+		} else {
+			localdata_remove('settings','checkouttime');
+		}
+
+		localdata_attr('settings','checktype',checktype);
+		localdata_attr('settings','noweekend',noweekend);
+		$(this).next().removeClass('warning').addClass('info').html('保存成功！').fadeIn();
+		clearSettingTip();
+	});
+
+	$('#enable-autocheckin').on('click',function  () {
+		if ($(this).prop('checked')) {
+			$('#settings input,#settings select').prop('disabled',false);
+		} else {
+			$('#settings input,#settings select').prop('disabled',true);
+			$(this).prop('disabled',false);
+		}
+	});
+
+	$('#checkin-type').on('change',function  () {
+		var val = $(this).val() | 0;
+		if ((val & CHCKIN) == CHCKIN) {
+			$('#checkin').show();
+		} else {
+			$('#checkin').hide();
+		}
+
+		if ((val & CHCKOUT) == CHCKOUT) {
+			$('#checkout').show();
+		} else {
+			$('#checkout').hide();
+		}
+	});
+
+	$('#clear-log').on('click',function  () {
+		clearAllLog();
+		selectAllLog();
 	});
 
 });

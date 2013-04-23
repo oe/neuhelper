@@ -1,17 +1,5 @@
-var timer = {'in':null,'out':null},
-	CHCKIN = 1,
-	CHCKOUT = 2,
-	db;
+var timer = {'in':null,'out':null};
 
-function logmsg (data) { //write log to database
-	if (db && data && data.log) {
-		var d = new Date();
-		data.type = data.type || 'info';
-		db.transaction(function  (tx) {
-			tx.executeSql('INSERT INTO klog (id,log,time,type) VALUES (?,?,?,?)',[+d,data.log,formatDate(d),data.type]);
-		});
-	}
-}
 
 function removeLogBefore(day) { //clear log before "day" days ago
 	day = day | 0;
@@ -38,7 +26,7 @@ function doAttendance (config) {
 	config.htmlstr = config.htmlstr.replace(/<img[^>]+>/g,''); //remove img tag
 	config.htmlstr = config.htmlstr.replace(/background="[^"]+"/g,''); //remove background image
 	if (-1 == config.htmlstr.indexOf('name="attendanceForm"')) {
-		localdata_attr('settings','autocheckin',false);
+		localdata_attr('settings','checktype',0);
 		push_notification({body:"用户名密码不好使啊！请在选项页中再次输入您的用户名及密码！"});
 		return;
 	}
@@ -46,29 +34,33 @@ function doAttendance (config) {
 	div.innerHTML = config.htmlstr;
 	table = div.querySelectorAll('table')[8]; // focus on attendance table
 	table = table.querySelectorAll('tr');
-	if (CHCKIN & checktype == CHCKIN) {
+	if ((CHCKIN & checktype) == CHCKIN) {
 		checked = table[2] ? true : false;
 		timesetting = localdata_attr(settings,'checkintime');
 		checkAttendaceTime (timesetting,checked,config.htmlstr);
 	}
 
-	if (CHCKOUT & checktype == CHCKOUT) {
-		checked = table[2] ? true : false;
-		timesetting = localdata_attr(settings,'checkouttime');
+	if ((CHCKOUT & checktype) == CHCKOUT) {
+		checked = table[4] ? true : false;
+		timesetting = localdata_attr('settings','checkouttime');
 		checkAttendaceTime (timesetting,checked,config.htmlstr);
 	}
+
+	div = null;
+	table = null;
 }
 
 function checkAttendaceTime (timesetting,checked,html) {
 	if (checked) {
-		log('has checked in');
+		logmsg({log:'has checked in'});
 		setCheckinoutTimer(timesetting,checked);
 	} else{
 		var d = new Date(),
 			day = d.getDay(),
 			hour = d.getHours(),
-			minute = d.getMinutes();
-		if (notCheckInWeekend) {
+			minute = d.getMinutes(),
+			noweekend = localdata_attr('settings','noweekend');
+		if (noweekend) {
 			if (day == 6 || day === 0) {
 				setCheckinoutTimer(timesetting,checked);
 				return false;
@@ -77,7 +69,7 @@ function checkAttendaceTime (timesetting,checked,html) {
 		if (hour < timesetting.hour || (hour == timesetting.hour && minute < timesetting.minminute)) {
 			setCheckinoutTimer();
 		} else if(hour == timesetting.hour && minute >= timesetting.minminute && minute <= timesetting.maxminute) {
-			docheckin();
+			__doAttendance(html);
 			setCheckinoutTimer(timesetting,checked);
 		} else {
 			var log = '已经过了' + timesetting.name + '时间，未自动打卡';
@@ -117,12 +109,12 @@ function setCheckinoutTimer (timesetting,checked) {
 		hour = date.getHours(),
 		minute = date.getMinutes(),
 		time = timesetting.hour,
-		notCheckInWeekend = localdata_attr('settings','notCheckInWeekend'),
+		noweekend = localdata_attr('settings','noweekend'),
 		newTime,
 		log;
 	clearTimeout(timer[timesetting.type]);
 	if (checked) {
-		if (notCheckInWeekend) {
+		if (noweekend) {
 			if (day == 5) {
 				time += 24 + 24 + 24;
 			} else if(day == 6) {
@@ -134,7 +126,7 @@ function setCheckinoutTimer (timesetting,checked) {
 			time += 24;
 		}
 	} else {
-		if (notCheckInWeekend) {
+		if (noweekend) {
 			if (day == 5) {
 				time += 24 + 24 + 24;
 			} else if(day == 6) {
@@ -164,7 +156,12 @@ function setCheckinoutTimer (timesetting,checked) {
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 	if (request.method == "getAccountInfo"){
-		sendResponse(localdata_attr('account','default'));
+		if (localdata_attr('account','available')) {
+			sendResponse(localdata_attr('account','default'));
+		} else {
+			push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
+			sendResponse({'available':false});
+		}
 	}else if(request.method == 'showAddAccountTip'){
 		push_notification({title:'账户通知',body:'您还没有添加账户哦，请到选项中的账户管理页中添加账户！'});
 		sendResponse({});
@@ -176,21 +173,52 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 function init () {
 	var account = localdata_attr('account','default');
 	if (account) {
-		if(localdata_attr('settings','autocheckin')){
-			loginKaoqin({callback:doAttendance});
-			// clearTimeout(morningTimer);
+		if (!localdata_attr('account','available')) {
+			push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
+		} else {
+			if(localdata_attr('settings','checktype')){
+				loginKaoqin({callback:doAttendance});
+			}
 		}
 	}else{
-		push_notification({title:'账户通知',body:'您还没有添加账户哦，请到选项中的账户管理页中添加账户！ init'});
+		push_notification({title:'账户通知',body:'您还没有添加账户哦，请到选项中的账户管理页中添加账户!'});
 	}
 }
 
 
 window.addEventListener("storage", function  (event) {
-	console.log('storage event');
+	var checktype = localdata_attr('settings','checktype'),
+		available = localdata_attr('account','available');
 	if (event.key == 'settings') {
-		if(!localdata_attr('settings','autocheckin')){
-			clearTimeout(morningTimer);
+		if ((checktype & CHCKIN) != CHCKIN) {
+			clearTimeout(timer['in']);
+			timer['in'] = null;
+			logmsg({'log':'关闭了自动签到'});
+		} else{
+			logmsg({'log':'启用了自动签到'});
+		}
+
+		if ((checktype & CHCKOUT) != CHCKOUT) {
+			clearTimeout(timer['out']);
+			timer['out'] = null;
+			logmsg({'log':'关闭了自动签退'});
+		} else {
+			logmsg({'log':'启动了自动签退'});
+		}
+		loginKaoqin({callback:doAttendance});
+	} else if (event.key == 'account') {
+		if (!available) {
+			if ((checktype & CHCKIN) == CHCKIN) {
+				logmsg({'log':'账户配置错误，已取消自动签到','type':'warning'});
+				clearTimeout(timer['in']);
+				timer['in'] = null;
+			}
+
+			if ((checktype & CHCKOUT) == CHCKOUT) {
+				logmsg({'log':'账户配置错误，已取消自动签退','type':'warning'});
+				clearTimeout(timer['out']);
+				timer['out'] = null;
+			}
 		}
 	}
 	console.log('end storage event');

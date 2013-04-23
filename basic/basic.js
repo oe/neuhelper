@@ -27,10 +27,19 @@ var urls = {
 			'main_url': 'https://mail.neusoft.com/owa/'
 		}
 	},
-	db;
+	db = null, //db handle
+	_salt = 'saling', /// define a salt as the string encrypt key
+	CHCKIN = 1,
+	CHCKOUT = 2;
 
-/// define a salt as the key
-var _salt = 'saling';
+(function (window) { // init db handle
+	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
+	db.transaction(function  (tx) {
+		var d = new Date();
+		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id unique,log,time,type)');
+	});
+})(window);
+
 
 function localdata_attr (item,key,data) {
 	if (typeof(item) === 'undefined') return null;
@@ -69,10 +78,12 @@ function localdata_remove (item,key) {
 	var ret = localStorage.getItem(item);
 	if (ret !== null) {
 		if (typeof(key) !== 'undefined') {
+			ret = decrypt_str(ret);
 			ret = decodeURIComponent(ret);
 			ret = JSON.parse(ret);
 			delete ret[key];
-			ret = JSON.stringify(ret);
+			ret = encodeURIComponent(JSON.stringify(ret));
+			ret = encrypt_str(ret);
 			localStorage.setItem(item,ret);
 		} else{
 			localStorage.removeItem(item);
@@ -152,7 +163,6 @@ function push_notification (data) {
 			data.body  // notification body text
 		),
 		time;
-	console.log(hashdata);
 	notification.show();
 	time = data.time;
 	if ('undefined' === typeof(time)) {
@@ -170,6 +180,7 @@ function push_notification (data) {
 }
 
 function loginKaoqin (config) { //config: {callback:parse}
+	// chrome.cookies.remove({url:urls.kaoqin.login_url,name:'JSESSIONID'}); //remove the old session
 	$.ajax({
 		url: urls.kaoqin.login_url,
 		type: 'GET',
@@ -229,11 +240,12 @@ function formatDate (date) {
 	}
 }
 
-(function (db) { // init db handle
-	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
-	db.transaction(function  (tx) {
+function logmsg (data) { //write log to database
+	if (db && data && data.log) {
 		var d = new Date();
-		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id unique,log,time,type)');
-		// tx.executeSql('INSERT INTO klog (id,log,time,type) VALUES (?,?,?,?)',[+d,'Neuhelper inited',formatDate(d),'info']);
-	});
-})(db);
+		data.type = data.type || 'info';
+		db.transaction(function  (tx) {
+			tx.executeSql('INSERT INTO klog (id,log,time,type) VALUES (?,?,?,?)',[+d,data.log,formatDate(d),data.type]);
+		});
+	}
+}

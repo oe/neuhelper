@@ -119,6 +119,15 @@ input[type="text"],input[type="password"]{
 	margin-left: 130px;
 }
 
+fieldset{
+	margin-bottom: 10px;
+}
+fieldset legend{
+	margin-left: 30px;
+	padding: 0 4px;
+	color: #888;
+}
+
 .checkin input[type="text"]{
 	width: 50px;
 }
@@ -132,3 +141,36 @@ input[type="text"],input[type="password"]{
 .checkin-range{
 	display: inline-block;
 }
+.clear-log-wrapper{
+	text-align: right;
+	padding: 6px 0;
+}
+.log-wrapper table{
+	border-collapse: collapse;
+	width: 600px;
+}
+.log-wrapper table tr{
+	border-top: 1px dashed #ccc;
+	border-bottom: 1px dashed #ccc;
+}
+.log-wrapper table tr td:first-child{
+	width: 200px;
+	text-align: center;
+}
+.log-wrapper table tr td{
+	padding: 2px 4px;
+}
+.log-wrapper table tr.info{
+	background-color: #d9edf7;
+}
+.log-wrapper table tr.warning{
+	background-color: #fcf8e3;
+}
+.log-wrapper table tr.error{
+	background-color: #f2dede;
+}
+
+.log-wrapper table tr.success{
+	background-color: #dff0d8;
+}
+

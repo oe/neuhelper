@@ -4,8 +4,12 @@ var nufun = function  (str) {
 function autoLogin (accountinfo) {
 	document.title = 'Saiya Saiya';
 	var href = window.location.href;
-	if (null === accountinfo || undefined === accountinfo['username']) {
+	if (undefined === accountinfo) {
 		chrome.extension.sendRequest({method: "showAddAccountTip"}, nufun);
+		return;
+	}
+	if (false === accountinfo['available']) {
+		return;
 	}
 	if (0 === href.indexOf('http://kq.neusoft.com') || 0 === href.indexOf('http://ehr.neusoft.com')) {
 		var inputs = document.getElementsByClassName('textfield');

@@ -15,6 +15,7 @@
 		<ul class="nav">
 			<li><a href="#accounts">账户设置</a></li>
 			<li><a href="#settings">Enable</a></li>
+			<li><a href="#kaoqin-log">打卡日志</a></li>
 			<li><a href="#about">关于</a></li>
 		</ul>
 	</div>
@@ -53,34 +54,72 @@
 			</div>
 			<div class="setting-item">
 				<div class="title">
-					%E8%87%AA%E5%8A%A8%E6%89%93%E5%8D%A1%E8%AE%BE%E7%BD%AE
+					自动打卡设置
 				</div>
 				<div class="setting-content">
 					<div class="input">
 						<input type="checkbox" id="enable-autocheckin" class="marin-span-1">
-						<label for="enable-autocheckin">Enable</label>
+						<label for="enable-autocheckin">启用自动打卡</label>
 					</div>
 					<div class="input">
-						<label class="span-1" for="password">签到类型</label>
-						<label><input type="radio" name="checkin-type" id="auto-checkin" value="in" checked>自动签到</label>
-						<label><input type="radio" name="checkin-type" id="auto-checkout" value="out">自动签退</label>
+						<label class="span-1" for="checkin-type">签到类型</label>
+						<select id="checkin-type">
+							<option value="1">自动签到</option>
+							<option value="2">自动签退</option>
+							<option value="3">自动签到签退</option>
+						</select>
+						<label><input type="checkbox" id="noweekend">周末不签到</label>
 					</div>
-					<div class="input checkin">
-						<label class="span-1" for="password">公司打卡时间</label>
-						<input type="text" name="hour" id="hour">时
-						<input type="text" name="minminute" id="minminute">分~
-						<input type="text" name="maxminute" id="maxminute">分
-					</div>
-					<div class="input checkin">
-						<label class="span-1" for="password">自动打卡时间区间</label>
-						<div class="checkin-range">
-							<div id="range-tip" class="range-tip"></div>
-							<input type="text" name="range" id="range">分中内打卡
+					<fieldset id="checkin">
+						<legend>Checkin</legend>
+						<div class="input checkin">
+							<label class="span-1">公司签到时间</label>
+							<input type="text" id="inhour">时
+							<input type="text" id="inminminute">分~
+							<input type="text" id="inmaxminute">分
 						</div>
-					</div>
+						<div class="input checkin">
+							<label class="span-1" for="inrange">自动签到时间区间</label>
+							<div class="checkin-range">
+								<div class="range-tip">从公司最早签到时间</div>
+								<input type="text" id="inrange">分中内签到
+							</div>
+						</div>
+					</fieldset>
+					<fieldset id="checkout">
+						<legend>Checkout</legend>
+						<div class="input checkin">
+							<label class="span-1">公司签退时间</label>
+							<input type="text" id="outhour">时
+							<input type="text" id="outminminute">分~
+							<input type="text" id="outmaxminute">分
+						</div>
+						<div class="input checkin">
+							<label class="span-1" for="outrange">自动签退时间区间</label>
+							<div class="checkin-range">
+								<div class="range-tip">从公司最早签退时间</div>
+								<input type="text" id="outrange">分中内打卡
+							</div>
+						</div>
+					</fieldset>
 					<div class="input">
 						<button class="pull-span-1 btn btn-info" id="save-settings">保存</button>
 						<span class="info"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="kaoqin-log">
+			<div class="setting-item">
+				<div class="title">
+					打卡日志
+				</div>
+				<div class="setting-content">
+					<div class="log-wrapper">
+						<div class="clear-log-wrapper">
+							<button class="btn btn-warning" id="clear-log">清空日志</button>
+						</div>
+						<div id="table-log" class="table-log"></div>
 					</div>
 				</div>
 			</div>
