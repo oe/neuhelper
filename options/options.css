@@ -149,16 +149,23 @@ fieldset legend{
 	border-collapse: collapse;
 	width: 600px;
 }
-.log-wrapper table tr{
+.log-wrapper table thead{
+	background-color: #eee;
+}
+.log-wrapper tbody tr{
 	border-top: 1px dashed #ccc;
 	border-bottom: 1px dashed #ccc;
 }
-.log-wrapper table tr td:first-child{
+.log-wrapper tbody tr td:first-child{
 	width: 200px;
 	text-align: center;
 }
-.log-wrapper table tr td{
+.log-wrapper tbody tr td{
 	padding: 2px 4px;
+}
+.error{
+	background-color: #f2dede;
+	color: red;
 }
 .log-wrapper table tr.info{
 	background-color: #d9edf7;

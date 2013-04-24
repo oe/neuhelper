@@ -1,12 +1,22 @@
+var db = null; //db handle;
+
+(function (window) { // init db handle
+	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
+	db.transaction(function  (tx) {
+		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id integer PRIMARY KEY autoincrement,log,time,type)');
+	});
+})(window);
 
 function selectAllLog () {
 	if (db) {
 		db.transaction(function (tx) {
+			tx.executeSql('DELETE FROM klog WHERE id NOT IN (SELECT id FROM klog ORDER BY id DESC limit ?)',[100]);
 			tx.executeSql('SELECT * FROM klog ORDER BY id DESC', [], function (tx, results) {
 				var len = results.rows.length,
 					i = 0,
 					msg = '';
 				msg += '<table>';
+				msg += '<thead><tr><th>时间</th><th>日志内容</th></tr></thead><tbody>';
 				if (len) {
 					for (i = 0; i < len; ++i) {
 						msg += '<tr class="' + results.rows.item(i).type + '">';
@@ -16,10 +26,13 @@ function selectAllLog () {
 				} else {
 					msg += '<tr class="info"><td colspan="2">还没有日志呢！</td></tr>';
 				}
-				msg += '</table>';
+				msg += '</tbody></table>';
 				document.querySelector('#table-log').innerHTML = msg;
 			}, null);
 		});
+	} else {
+		var msg = '<table><tr class="error"><td colspan="2">内部错误，如果重复出现，请反馈，谢谢。</td></tr></table>';
+		document.querySelector('#table-log').innerHTML = msg;
 	}
 }
 
@@ -161,7 +174,11 @@ $(function  ($) {
 	var hash = window.location.hash ? window.location.hash : '#accounts';
 
 	$('.sidebar .nav li a').on('click',function  () {
-		var target = $(this).attr('href');
+		var target;
+		if ($(this).hasClass('current')) {
+			return;
+		}
+		target = $(this).attr('href');
 		$('.sidebar .nav li a.current').removeClass('current');
 		$('.contents div.selected').removeClass('selected');
 		$(this).addClass('current');
@@ -212,7 +229,6 @@ $(function  ($) {
 						config.savebtn.next().removeClass('info').addClass('warning').html('用户名密码不好使啊！再试下呗！').fadeIn();
 					} else {
 						available = true;
-						logmsg({log:'更新用户信息成功，当前用户名为' + config.account.username});
 						config.savebtn.next().html('账户设置正常！保存成功！').fadeIn();
 					}
 					account['default'] = config.account;
@@ -322,5 +338,4 @@ $(function  ($) {
 		clearAllLog();
 		selectAllLog();
 	});
-
 });

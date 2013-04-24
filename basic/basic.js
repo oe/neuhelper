@@ -27,18 +27,9 @@ var urls = {
 			'main_url': 'https://mail.neusoft.com/owa/'
 		}
 	},
-	db = null, //db handle
 	_salt = 'saling', /// define a salt as the string encrypt key
 	CHCKIN = 1,
 	CHCKOUT = 2;
-
-(function (window) { // init db handle
-	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
-	db.transaction(function  (tx) {
-		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id unique,log,time,type)');
-	});
-})(window);
-
 
 function localdata_attr (item,key,data) {
 	if (typeof(item) === 'undefined') return null;
@@ -188,7 +179,7 @@ function loginKaoqin (config) { //config: {callback:parse}
 			__loginKaoqin(config);
 		},
 		error: function  (XMLHttpRequest, textStatus, errorThrown) {
-			alert(textStatus);
+			chrome.extension.sendRequest({method: "kqdown"}, function  (res) {return;});
 		}
 	});
 }
@@ -235,16 +226,6 @@ function formatDate (date) {
 			date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ' ' + days[date.getDay()];
 	} else{
 		return '';
-	}
-}
-
-function logmsg (data) { //write log to database
-	if (db && data && data.log) {
-		var d = new Date();
-		data.type = data.type || 'info';
-		db.transaction(function  (tx) {
-			tx.executeSql('INSERT INTO klog (id,log,time,type) VALUES (?,?,?,?)',[+d,data.log,formatDate(d),data.type]);
-		});
 	}
 }
 

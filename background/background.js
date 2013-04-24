@@ -1,13 +1,28 @@
-var timer = {'in':null,'out':null};
+var timer = {'in':null,'out':null},
+	db = null; //db handle;
 
+(function (window) { // init db handle
+	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
+	db.transaction(function  (tx) {
+		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id integer PRIMARY KEY autoincrement,log,time,type)');
+	});
+})(window);
 
-function removeLogBefore(day) { //clear log before "day" days ago
-	day = day | 0;
-	if (day > 0 && db) {
+function logmsg (data) { //write log to database
+	if (db && data && data.log) {
+		var d = new Date();
+		data.type = data.type || 'info';
 		db.transaction(function  (tx) {
-			var time = + new Date();
-			time -= day * 24 *  60 * 60 * 1000;
-			tx.executeSql('DELETE FROM klog WHERE id < ?',[time]);
+			tx.executeSql('INSERT INTO klog (log,time,type) VALUES (?,?,?)',[data.log,formatDate(d),data.type]);
+		});
+	}
+}
+
+function removeLogOver(number) { //clear log before "day" days ago
+	number = number | 0;
+	if (number > 0 && db) {
+		db.transaction(function  (tx) {
+			tx.executeSql('DELETE FROM klog WHERE id NOT IN (SELECT id FROM klog ORDER BY id DESC limit ?)',[number]);
 		});
 	}
 }
@@ -46,7 +61,7 @@ function doAttendance (config) {
 	if ((CHCKIN & checktype) == CHCKIN) {
 		checked = false;
 		htmlstr2 = htmlstr;
-		if (table[2]) {
+		if (table[2] && (-1 == table[2].innerText.indexOf('今天还没有打卡记录'))) {
 			checked = true;
 			htmlstr2 = table[2].innerText.replace(/\s+/g,' ');
 		}
@@ -106,8 +121,6 @@ function checkAttendaceTime (timesetting,checked,html) {
 }
 
 function __doAttendance (html) {
-	console.log('attenace check in called ');
-	return false;
 	var tmpid,
 		start,
 		end,
@@ -122,7 +135,8 @@ function __doAttendance (html) {
 		method: "POST",
 		data: data,
 		success: function  (str) {
-			console.log(str);
+			// console.log(str);
+			removeLogOver(100);
 		}
 	});
 }
@@ -137,6 +151,7 @@ function setCheckinoutTimer (timesetting,checked) {
 		newTime,
 		log;
 	clearTimeout(timer[timesetting.type]);
+	timer[timesetting.type] = null;
 	if (checked) {
 		if (noweekend) {
 			if (day == 5) {
@@ -173,19 +188,36 @@ function setCheckinoutTimer (timesetting,checked) {
 }
 
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-	if (request.method == "getAccountInfo"){
-		if (localdata_attr('account','available')) {
-			sendResponse(localdata_attr('account','default'));
-		} else {
-			push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
-			sendResponse({'available':false});
+	var method = request.method;
+	if (method) {
+		switch(method) {
+			case 'getAccountInfo':
+				if (localdata_attr('account','available')) {
+					sendResponse(localdata_attr('account','default'));
+				} else {
+					push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
+					sendResponse({'available':false});
+				}
+				break;
+			case 'showAddAccountTip':
+				push_notification({title:'账户通知',body:'您还没有添加账户哦，请到选项中的账户管理页中添加账户！'});
+				sendResponse({});
+				break;
+			case 'kqdown':
+				push_notification({title:'系统通知',body:'考勤网站挂了，自动打卡已取消。',time:false});
+				logmsg({'log':'考勤网站挂了，已取消自动打卡','type':'error'});
+				clearTimeout(timer['in']);
+				clearTimeout(timer['out']);
+				timer['in'] = null;
+				timer['out'] = null;
+				sendResponse({});
+				break;
+			default:
+				sendResponse({});
 		}
-	}else if(request.method == 'showAddAccountTip'){
-		push_notification({title:'账户通知',body:'您还没有添加账户哦，请到选项中的账户管理页中添加账户！'});
+	} else {
 		sendResponse({});
 	}
-	else
-		sendResponse({}); //
 });
 
 function init () {
@@ -222,6 +254,8 @@ window.addEventListener("storage", function  (event) {
 			if (oldValue && (oldValue.checktype != newValue.checktype)) {
 				clearTimeout(timer['in']);
 				clearTimeout(timer['out']);
+				timer['in'] = null;
+				timer['out'] = null;
 				logmsg({'log':'关闭了自动打卡'});
 			}
 			return;
@@ -231,6 +265,8 @@ window.addEventListener("storage", function  (event) {
 			logmsg({'log':'因账户设置错误，自动打卡启用失败。','type':'warning'});
 			clearTimeout(timer['in']);
 			clearTimeout(timer['out']);
+			timer['in'] = null;
+			timer['out'] = null;
 			return;
 		}
 		if (oldValue && (oldValue.checktype == newValue.checktype)) {
@@ -248,10 +284,12 @@ window.addEventListener("storage", function  (event) {
 				case 1:
 					logmsg({'log':'启用了自动签到'});
 					clearTimeout(timer['out']);
+					timer['out'] = null;
 					break;
 				case 2:
 					logmsg({'log':'启用了自动签退'});
 					clearTimeout(timer['in']);
+					timer['in'] = null;
 					break;
 				case 3:
 					logmsg({'log':'启用了自动签到、签退'});
@@ -261,10 +299,16 @@ window.addEventListener("storage", function  (event) {
 		loginKaoqin({callback:doAttendance});
 	} else if (event.key == 'account') {
 		checktype = localdata_attr('settings','checktype');
-		if (!newValue.available && !checktype) {
-			logmsg({'log':'因账户配置错误，已取消自动打卡','type':'warning'});
-			clearTimeout(timer['in']);
-			clearTimeout(timer['out']);
+		if (newValue.available) {
+			logmsg({log:'更新用户信息成功，当前用户名为' + newValue['default'].username});
+		} else {
+			if (!checktype) {
+				logmsg({'log':'因账户配置错误，已取消自动打卡','type':'warning'});
+				clearTimeout(timer['in']);
+				clearTimeout(timer['out']);
+				timer['in'] = null;
+				timer['out'] = null;
+			}
 		}
 	}
 }, false);

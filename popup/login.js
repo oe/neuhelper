@@ -27,7 +27,6 @@ function autoLogin (accountinfo) {
 	}
 }
 if (document.readyState == 'complete') {
-	document.title = 'Saiya Saiya';
 	chrome.extension.sendRequest({method: "getAccountInfo"}, autoLogin);
 } else {
 	var stateChange = function  () {
