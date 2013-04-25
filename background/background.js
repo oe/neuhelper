@@ -34,11 +34,20 @@ function doAttendance (config) {
 		end = config.htmlstr.indexOf('</body>'),
 		accountAccessAble = false,
 		settings = localdata_attr('settings'),
-		checked = false,
 		timesetting = null,
 		checktype = 0,
 		htmlstr = '',
-		htmlstr2 = '';
+		d = new Date(),
+		checked = -1,
+		now = {
+			'hour':   d.getHours(),
+			'minute': d.getMinutes()
+		},
+		checkStatus = {'in':{
+				'checked':false
+			},'out':{
+				'checked':false
+		}};
 	if (settings && settings.checktype) {
 		checktype = settings.checktype;
 	}
@@ -58,12 +67,42 @@ function doAttendance (config) {
 	div.innerHTML = htmlstr;
 	table = div.querySelectorAll('table')[8]; // focus on attendance table
 	table = table.querySelectorAll('tr');
+	if (table[2] && (-1 == table[2].innerText.indexOf('今天还没有打卡记录'))) {
+		checkStatus['in']['checked'] = true;
+		checkStatus['in']['timestr'] = table[2].innerText.replace(/\s+/g,' ');
+	}
+	if (table[4]) {
+			checkStatus['out']['checked'] = true;
+			checkStatus['out']['timestr'] = table[4].innerText.replace(/\s+/g,' ');
+	}
+
+	switch(checktype) {
+		case 1:
+			timesetting = settings.checktime['in'];
+			checked = compareChecktime(now,timesetting);
+			if (-1 == checked) {
+			    
+			} else {
+			    
+			}
+			break;
+		case 2:
+			
+			break;
+		case 3:
+			
+			break;
+		default:
+			break;
+	}
+
+
 	if ((CHCKIN & checktype) == CHCKIN) {
 		checked = false;
 		htmlstr2 = htmlstr;
 		if (table[2] && (-1 == table[2].innerText.indexOf('今天还没有打卡记录'))) {
-			checked = true;
-			htmlstr2 = table[2].innerText.replace(/\s+/g,' ');
+			checkStatus['in']['checked'] = true;
+			checkStatus['in']['timestr'] = table[2].innerText.replace(/\s+/g,' ');
 		}
 		timesetting = settings.checktime['in'];
 		checkAttendaceTime (timesetting,checked,htmlstr2);
@@ -73,6 +112,7 @@ function doAttendance (config) {
 		checked = false;
 		htmlstr2 = htmlstr;
 		if (table[4]) {
+
 			checked = true;
 			htmlstr2 = table[4].innerText.replace(/\s+/g,' ');
 		}
@@ -82,6 +122,16 @@ function doAttendance (config) {
 	div = null;
 	table = null;
 	config = null;
+}
+
+function compareChecktime (now,timesetting) {
+	if (now.hour < timesetting.hour || (now.hour == timesetting.hour && now.minute < timesetting.minminute)) {
+		return -1;
+	} else if(now.hour == timesetting.hour && now.minute >= timesetting.minminute && now.minute <= timesetting.maxminute) {
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 function checkAttendaceTime (timesetting,checked,html) {
@@ -188,7 +238,7 @@ function setCheckinoutTimer (timesetting,checked) {
 	logmsg({'log':log});
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 	var method = request.method;
 	if (method) {
 		switch(method) {

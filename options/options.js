@@ -206,9 +206,15 @@ $(function  ($) {
 
 	$('.sidebar .nav li a[href="' + hash + '"]')[0].click();
 
-	$('#accounts input').on('focus',function  () {
+	$('#accounts').on('focus','input[type="text"],input[type="password"]',function  () {
 		$(this).removeClass('warning');
 		$(this).next().fadeOut();
+	});
+
+	$('#accounts').on('keydown','input[type="text"],input[type="password"]',function  (event) {
+		if (event.keyCode == 13) {
+			$('#save-account').click();
+		}
 	});
 
 	$('#save-account').on('click',function  () {
@@ -236,9 +242,9 @@ $(function  ($) {
 					account = encodeURIComponent(JSON.stringify(account));
 					account = encrypt_str(account);
 					localStorage.setItem('account',account);
+					config.savebtn.attr('disabled',false);
+					config.savebtn.text('保存',false);
 					setTimeout(function () {
-						config.savebtn.attr('disabled',false);
-						config.savebtn.text('保存',false);
 						config.savebtn.next().fadeOut(function  () {
 							$(this).removeClass('warning').addClass('info');
 						});

@@ -178,7 +178,7 @@ function loginKaoqin (config) { //config: {callback:parse}
 			__loginKaoqin(config);
 		},
 		error: function  (XMLHttpRequest, textStatus, errorThrown) {
-			chrome.runtime.sendMessage({method: "kqdown"}, function  (res) {return;});
+			chrome.extension.sendRequest({method: "kqdown"}, function  (res) {return;});
 		}
 	});
 }
