@@ -170,7 +170,6 @@ function push_notification (data) {
 }
 
 function loginKaoqin (config) { //config: {callback:parse}
-	// chrome.cookies.remove({url:urls.kaoqin.login_url,name:'JSESSIONID'}); //remove the old session
 	$.ajax({
 		url: urls.kaoqin.login_url,
 		type: 'GET',
@@ -179,7 +178,7 @@ function loginKaoqin (config) { //config: {callback:parse}
 			__loginKaoqin(config);
 		},
 		error: function  (XMLHttpRequest, textStatus, errorThrown) {
-			chrome.extension.sendRequest({method: "kqdown"}, function  (res) {return;});
+			chrome.runtime.sendMessage({method: "kqdown"}, function  (res) {return;});
 		}
 	});
 }

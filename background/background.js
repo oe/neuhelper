@@ -136,6 +136,7 @@ function __doAttendance (html) {
 		data: data,
 		success: function  (str) {
 			// console.log(str);
+			logmsg({'log':'打卡成功！','type':'success'});
 			removeLogOver(100);
 		}
 	});
@@ -187,7 +188,7 @@ function setCheckinoutTimer (timesetting,checked) {
 	logmsg({'log':log});
 }
 
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	var method = request.method;
 	if (method) {
 		switch(method) {
@@ -205,7 +206,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 				break;
 			case 'kqdown':
 				push_notification({title:'系统通知',body:'考勤网站挂了，自动打卡已取消。',time:false});
-				logmsg({'log':'考勤网站挂了，已取消自动打卡','type':'error'});
+				logmsg({'log':'无法正常访问考勤网站，已取消自动打卡','type':'error'});
 				clearTimeout(timer['in']);
 				clearTimeout(timer['out']);
 				timer['in'] = null;
