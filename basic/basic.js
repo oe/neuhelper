@@ -148,9 +148,9 @@ function push_notification (data) {
 	data.body = data.body || '这是一个假通知，您可以忽略';
 	var hashdata = encodeURIComponent(JSON.stringify(data)),
 		notification = webkitNotifications.createNotification(
-			'/img/icon48.png',  // icon url - can be relative
-			data.title,  // notification title
-			data.body  // notification body text
+			'/img/icon48.png',
+			data.title,
+			data.body
 		),
 		time;
 	notification.show();
@@ -178,7 +178,7 @@ function loginKaoqin (config) { //config: {callback:parse}
 			__loginKaoqin(config);
 		},
 		error: function  (XMLHttpRequest, textStatus, errorThrown) {
-			chrome.extension.sendRequest({method: "kqdown"}, function  (res) {return;});
+			chrome.runtime.sendMessage({method: "kqdown"}, function  (res) {return;});
 		}
 	});
 }

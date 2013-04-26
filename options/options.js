@@ -118,7 +118,7 @@ function initSettingTab () {
 		autocheckEnabled = true;
 	}
 
-	if (!settings.noweekend) {
+	if (settings.noweekend === undefined) {
 		noweekend = true;
 	} else {
 		noweekend = settings.noweekend;
@@ -224,7 +224,6 @@ $(function  ($) {
 			data['username'] = $.trim($('#username').val());
 			data['password'] = $.trim($('#password').val());
 			data['nickname'] = $.trim($('#nickname').val());
-			// localdata_attr('account','default',data);
 			loginKaoqin({
 				savebtn: $(this),
 				account: data,
@@ -266,6 +265,7 @@ $(function  ($) {
 		checktype = parseInt(checktype,10);
 		if (!$('#enable-autocheckin').prop('checked')) {
 			checktype = 0;
+			noweekend = true; //set noweekend to default ( true )
 		}
 		if (isNaN(checktype) || checktype < 0 || checktype > 3) {
 			$(this).next().removeClass('info').addClass('warning').html('打卡类型错误！').fadeIn();
@@ -305,6 +305,15 @@ $(function  ($) {
 		} else {
 			delete checktime['out'];
 		}
+
+		if (3 == checktype) {
+			if (checkout.hour < checkin.hour ) {
+				$(this).next().removeClass('info').addClass('warning').html('签退的时钟数需大于签到的时钟数！').fadeIn();
+				clearSettingTip();
+				return;
+			}
+		}
+
 		settings.checktype = checktype;
 		settings.checktype = checktype;
 		settings.noweekend = noweekend;

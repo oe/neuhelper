@@ -1,11 +1,7 @@
-var nufun = function  (str) {
-};
-
 function autoLogin (accountinfo) {
-	document.title = 'Saiya Saiya';
 	var href = window.location.href;
-	if (undefined === accountinfo) {
-		chrome.extension.sendRequest({method: "showAddAccountTip"}, nufun);
+	if (!accountinfo || (typeof accountinfo != 'object')) {
+		chrome.runtime.sendMessage({method: "showAddAccountTip"}, function  (str) {});
 		return;
 	}
 	if (false === accountinfo['available']) {
@@ -27,11 +23,11 @@ function autoLogin (accountinfo) {
 	}
 }
 if (document.readyState == 'complete') {
-	chrome.extension.sendRequest({method: "getAccountInfo"}, autoLogin);
+	chrome.runtime.sendMessage({method: "getAccountInfo"}, autoLogin);
 } else {
 	var stateChange = function  () {
 		if (document.readyState == 'complete') {
-			chrome.extension.sendRequest({method: "getAccountInfo"}, autoLogin);
+			chrome.runtime.sendMessage({method: "getAccountInfo"}, autoLogin);
 		}
 	};
 	document.onreadystatechange = stateChange;

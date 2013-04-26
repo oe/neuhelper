@@ -1,0 +1,32 @@
+body{
+	font-family:'Century Gothic', 'Microsoft YaHei', Verdana;
+	width: 200px;
+}
+.hello{
+	width: 100%;
+	font-size: 14px;
+}
+.cnday{
+	font-size: 12px;
+	color: #999;
+}
+.fun {
+	margin-top: 12px;
+	/*text-align: center;*/
+}
+.fun span,a:link,a:visited{
+	padding: 6px 4px;
+	color: #08c;
+	text-decoration: none;
+	cursor: pointer;
+}
+.fun span {
+	border: 1px dashed #ccc;
+}
+.fun span:hover,a:hover,a:visited{
+	color: #005580;
+}
+.fun span:hover{
+	border-color: green;
+	background-color: #ddd;
+}
