@@ -5,6 +5,7 @@ var timer = 0,
 	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
 	db.transaction(function  (tx) {
 		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id integer PRIMARY KEY autoincrement,log,time,type)');
+		tx.executeSql('CREATE TABLE IF NOT EXISTS notice (id,content,title,readed)');
 	});
 })(window);
 
@@ -266,7 +267,8 @@ function setCheckinoutTimer (timesetting,checked) {
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	var method = request.method;
+	var method = request.method,
+		log;
 	if (method) {
 		switch(method) {
 			case 'getAccountInfo':
@@ -283,8 +285,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				break;
 			case 'kqdown':
 				push_notification({title:'系统通知',body:'考勤网站挂了，自动打卡已取消。',time:false});
-				logmsg({'log':'无法正常访问考勤网站，已取消自动打卡','type':'error'});
+				if (localdata_attr('settings','checktype')) {
+					log = '无法正常访问考勤网站，已取消自动打卡';
+				} else {
+					log = '无法正常访问考勤网站.';
+				}
 				clearTimeout(timer);
+				logmsg({'log':log,'type':'error'});
 				sendResponse({});
 				break;
 			default:
@@ -334,7 +341,7 @@ window.addEventListener("storage", function  (event) {
 		}
 		available = localdata_attr('account','available');
 		if (!available) {
-			logmsg({'log':'因账户设置错误，自动打卡启用失败。','type':'warning'});
+			logmsg({'log':'已更新打卡设置，但因账户设置错误，自动打卡启用失败。','type':'warning'});
 			clearTimeout(timer);
 			return;
 		}
@@ -362,11 +369,14 @@ window.addEventListener("storage", function  (event) {
 			}
 		}
 		clearTimeout(timer);
-		loginKaoqin({callback:doAttendance});
+		autoCheckInOut();
 	} else if (event.key == 'account') {
 		checktype = localdata_attr('settings','checktype');
 		if (newValue.available) {
 			logmsg({log:'更新用户信息成功，当前用户名为' + newValue['default'].username});
+			if ((!oldValue || !oldValue.available) && checktype) {
+				autoCheckInOut();
+			}
 		} else {
 			if (!checktype) {
 				logmsg({'log':'因账户配置错误，已取消自动打卡','type':'warning'});

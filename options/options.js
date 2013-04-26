@@ -4,6 +4,7 @@ var db = null; //db handle;
 	db = openDatabase('Neuhelper','1.0','Neuhelper\'s datebase',2 * 1024 * 1024);
 	db.transaction(function  (tx) {
 		tx.executeSql('CREATE TABLE IF NOT EXISTS klog (id integer PRIMARY KEY autoincrement,log,time,type)');
+		tx.executeSql('CREATE TABLE IF NOT EXISTS notice (id,content,title,readed)');
 	});
 })(window);
 
