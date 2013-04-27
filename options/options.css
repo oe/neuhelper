@@ -176,7 +176,6 @@ fieldset legend{
 .log-wrapper table tr.error{
 	background-color: #f2dede;
 }
-
 .log-wrapper table tr.success{
 	background-color: #dff0d8;
 }
@@ -188,4 +187,8 @@ fieldset legend{
 }
 .about{
 	color: #444;
+}
+.feedbak-frame{
+	width: 730px;
+	min-height: 500px;
 }

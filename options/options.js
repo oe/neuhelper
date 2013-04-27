@@ -172,7 +172,8 @@ function initSettingTab () {
 }
 
 $(function  ($) {
-	var hash = window.location.hash ? window.location.hash : '#accounts';
+	var hash = window.location.hash ? window.location.hash : '#accounts',
+		feedback;
 
 	$('.sidebar .nav li a').on('click',function  () {
 		var target;
@@ -199,6 +200,12 @@ $(function  ($) {
 				break;
 			case 'kaoqin-log':
 				selectAllLog();
+				break;
+			case 'feedback':
+				if (!feedback) {
+					feedback = 'http://app.evecalm.com/neuhelper/feedback.html';
+					$('#feedbak-frame').attr('src',feedback);
+				}
 				break;
 			default:
 				break;
