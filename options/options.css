@@ -68,6 +68,7 @@ body{
 }
 .nav>li>a.current{
 	border-left-color: #666;
+	font-weight: 600;
 	color: #333;
 }
 
@@ -144,6 +145,10 @@ fieldset legend{
 .clear-log-wrapper{
 	text-align: right;
 	padding: 6px 0;
+}
+.clear-log-wrapper .tips{
+	color: #777;
+	padding-right: 10px;
 }
 .log-wrapper table{
 	border-collapse: collapse;

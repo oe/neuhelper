@@ -13,18 +13,18 @@
 		</div>
 		<div class="arrow"></div>
 		<ul class="nav">
-			<li><a href="#accounts">账户设置</a></li>
-			<li><a href="#settings">自动打卡</a></li>
-			<li><a href="#kaoqin-log">打卡日志</a></li>
-			<li><a href="#about">关于</a></li>
-			<li><a href="#feedback">反馈</a></li>
+			<li><a href="#accounts">Account</a></li>
+			<li><a href="#settings">Auto-punch</a></li>
+			<li><a href="#kaoqin-log">Logs</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#feedback">Feedback</a></li>
 		</ul>
 	</div>
 	<div class="contents">
 		<div id="accounts">
 			<div class="setting-item">
 				<div class="title">
-					账户设置
+					Account settings
 				</div>
 				<div class="setting-content">
 					<div class="input">
@@ -55,7 +55,7 @@
 			</div>
 			<div class="setting-item">
 				<div class="title">
-					自动打卡设置
+					Configure auto-punch
 				</div>
 				<div class="setting-content">
 					<div class="input">
@@ -109,16 +109,40 @@
 					</div>
 				</div>
 			</div>
+			<div class="setting-item">
+				<div class="title">
+					Notice
+				</div>
+				<div class="setting-content">
+					<ol class="ol-about">
+						<li class="error">
+							本人不保证本扩展相关功能在任何时候都有效，请不要过分依赖本扩展。因使用本扩展所带来的任何风险由个人承担，本人概不负责。
+						</li>
+						<li>
+							如果不需要自动打卡，可以取消选中“启用自动打卡”，再保存。如果需要，则需保持浏览器一直开启。
+						</li>
+						<li>
+							打卡时间是在输入的时间范围内，再使用自动签到/签退时间区间来随机生成的。
+						</li>
+						<li>
+							在打卡时间内，如果已经打卡则不会重复打卡。如果已经超过了打卡时间，也不会打卡。如果打开浏览器的时间正好在打卡时间范围内，而且还未打卡，则会立即自动打卡。
+						</li>
+						<li>
+							如果需要周末打卡，请取消选中“周末不签到”并保存。
+						</li>
+					</ol>
+				</div>
+			</div>
 		</div>
 		<div id="kaoqin-log">
 			<div class="setting-item">
 				<div class="title">
-					打卡日志
+					Log of auto-punch
 				</div>
 				<div class="setting-content">
 					<div class="log-wrapper">
 						<div class="clear-log-wrapper">
-							<button class="btn btn-warning" id="clear-log">清空日志</button>
+							<span class="tips">只显示最近100条记录</span><button class="btn btn-warning" id="clear-log">清空日志</button>
 						</div>
 						<div id="table-log" class="table-log"></div>
 					</div>
@@ -128,7 +152,7 @@
 		<div id="about" class="about">
 			<div class="setting-item">
 				<div class="title">
-					关于
+					About
 				</div>
 				<div class="setting-content">
 					本扩展为Saiya业余完成。<br>
@@ -149,7 +173,7 @@
 			</div>
 			<div class="setting-item">
 				<div class="title">
-					声明
+					Announcement
 				</div>
 				<div class="setting-content">
 					<p class="error">本人不保证本扩展相关功能在任何时候都有效，请不要过分依赖本扩展。因使用本扩展所带来的任何风险由个人承担，本人概不负责。</p>
@@ -158,10 +182,14 @@
 			</div>
 			<div class="setting-item">
 				<div class="title">
-					更新历史
+					Changelog
 				</div>
 				<div class="setting-content">
 					<ol class="ol-about">
+						<li>
+							V 0.34 @2013/04/28
+							<p>增加反馈页。为了和谐，已将相关设置更改为英文。</p>
+						</li>
 						<li>
 							V 0.33 @2013/04/26
 							<p>优化打卡逻辑，美化了扩展Popup菜单并添加了农历</p>
@@ -193,7 +221,7 @@
 		<div id="feedback">
 			<div class="setting-item">
 				<div class="title">
-					反馈
+					Feedback
 				</div>
 				<div class="setting-content">
 					<iframe id="feedbak-frame" class="feedbak-frame" src="" scrolling="no" frameborder="0"></iframe>
