@@ -147,22 +147,18 @@ a.button:hover {
 }
 
 a.button span {
+  padding: 4px;
   padding-left: 50px;
   display: block;
   height: 23px;
 }
 
-#download-zip span {
-  background: transparent url(../images/zip-icon.png) 12px 50% no-repeat;
+#download-chrome span {
+  background: transparent url(../images/box_download.png) 12px 50% no-repeat;
+  /*padding: 2px 0 2px 12px;*/
 }
-#download-tar-gz span {
-  background: transparent url(../images/tar-gz-icon.png) 12px 50% no-repeat;
-}
-#view-on-github span {
-  background: transparent url(../images/octocat-icon.png) 12px 50% no-repeat;
-}
-#view-on-github {
-  margin-right: 0;
+#download-crx span {
+  background: transparent url(../images/file_download.png) 12px 50% no-repeat;
 }
 
 code, pre {
@@ -260,7 +256,8 @@ h3 {
  
 h4 {
   font-size: 16px;
-  color: #303030;
+  color: #c50001;
+  padding-left: 10px;
   font-weight: bold;
 } 
 
@@ -277,6 +274,7 @@ h6 {
 p {
   font-weight: 300;
   margin-bottom: 20px;
+  text-indent: 2em;
 }
  
 a {
@@ -308,6 +306,9 @@ dl dt {
   color: #303030;
 }
 
+.warning{
+  color: #f13;
+}
 footer {
   background: transparent url('../images/hr.png') 0 0 no-repeat;
   margin-top: 40px;
@@ -355,7 +356,7 @@ footer a:hover {
   #downloads {
     margin-bottom: 25px;
   }
-  #download-zip, #download-tar-gz {
+  #download-chrome, #download-crx {
     display: none;
   }
   .inner {
