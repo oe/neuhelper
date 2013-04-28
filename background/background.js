@@ -18,9 +18,9 @@ function logmsg (data) { //write log to database
 	}
 }
 
-function removeLogOver(number) { //clear log before "day" days ago
+function removeLogOver(number) { //clear log over "number" items
 	number = number | 0;
-	if (number > 0 && db) {
+	if (db && number > 0 ) {
 		db.transaction(function  (tx) {
 			tx.executeSql('DELETE FROM klog WHERE id NOT IN (SELECT id FROM klog ORDER BY id DESC limit ?)',[number]);
 		});
@@ -32,12 +32,10 @@ function doAttendance (config) {
 		div = null;
 		start = config.htmlstr.indexOf('<body>') + 6,
 		end = config.htmlstr.indexOf('</body>'),
-		accountAccessAble = false,
 		settings = localdata_attr('settings'),
 		checktype = 0,
 		htmlstr = '',
 		d = new Date(),
-		checked = -1,
 		now = {
 			'hour':   d.getHours(),
 			'minute': d.getMinutes()
@@ -98,10 +96,6 @@ function doAttendance (config) {
 		} else {
 			checkStatus = checkStatus['out'];
 			settings = settings.checktime['out'];
-		}
-		if (!settings) {
-			logmsg();
-			return;
 		}
 		if (checkStatus['status'] < 0) {
 			if (checkStatus['checked']) {
@@ -170,8 +164,8 @@ function doAttendance (config) {
 					setCheckinoutTimer (settings.checktime['in'],true);
 				} else {
 					if (checkStatus['out']['checked']) {
-						log = '已经过了签退的时间，没有自动签退。当前时间' + formatDate(d);
-						push_notification({'body':log,'title':'自动打卡通知','time':false});
+						log = '已经签退了，打卡信息为<br>' + checkStatus['out']['timestr'];
+						logmsg({'log':log});
 						setCheckinoutTimer (settings.checktime['in'],true);
 					} else {
 						setCheckinoutTimer (settings.checktime['out'],false);

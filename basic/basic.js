@@ -20,11 +20,6 @@ var urls = {
 			'login_url': 'http://processbase.neusoft.com/',
 			'post_url': 'http://processbase.neusoft.com/UserLogin.do',
 			'main_url': 'http://processbase.neusoft.com/UserLogin.do'
-		},
-		'mail': { //Mail
-			'login_url': 'https://mail.neusoft.com/owa/auth/logon.aspx?replaceCurrent=1&url=https%3a%2f%2fmail.neusoft.com%2fowa%2f',
-			'post_url': 'https://mail.neusoft.com/owa/auth.owa',
-			'main_url': 'https://mail.neusoft.com/owa/'
 		}
 	},
 	_salt = 'saling', /// define a salt as the string encrypt key
@@ -160,7 +155,7 @@ function push_notification (data) {
 	}
 	if (false !== time) {
 		time = time | 0;
-		if (time) {
+		if (time <= 0 ) {
 				time = 4000;
 		}
 		setTimeout(function  () {
