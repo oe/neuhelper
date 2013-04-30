@@ -25,116 +25,116 @@ var urls = {
 	_salt = 'saling', /// define a salt as the string encrypt key
 	CHCKIN = 1,
 	CHCKOUT = 2;
+var ls = (function  () {
+	var _salt = 'saling', /// define a salt as the string encrypt key
+		o = {};
 
-function localdata_attr (item,key,data) {
-	if (typeof(item) === 'undefined') return null;
-	var ret = localStorage.getItem(item);
-	if (ret) {
-		ret = decrypt_str(ret);
-		ret = decodeURIComponent(ret);
-		ret = JSON.parse(ret);
-		if (typeof(key) !== 'undefined') {
-			if (typeof(data) !== 'undefined') {
-				ret = ret || {};
-				ret[key] = data;
-				ret = encodeURIComponent(JSON.stringify(ret));
-				ret = encrypt_str(ret);
-				localStorage.setItem(item,ret);
-				return data;
-			} else {
-				return ret[key];
-			}
-		} else {
-			return ret;
+	/// encrypt a string 
+	function _encrypt_str(str) {
+		var prand = "",
+				i;
+		for(i=0; i<_salt.length; i++) {
+			prand += _salt.charCodeAt(i).toString();
 		}
-	} else {
-		if ('undefined' !== typeof(key) && typeof(data) !== 'undefined') {
-			ret = {};
-			ret[key] = data;
-			ret = encodeURIComponent(JSON.stringify(ret));
-			ret = encrypt_str(ret);
-			localStorage.setItem(item,ret);
+		var sPos = Math.floor(prand.length / 5);
+		var mult = parseInt(prand.charAt(sPos) + prand.charAt(sPos*2) + prand.charAt(sPos*3) + prand.charAt(sPos*4) + prand.charAt(sPos*5),10);
+		var incr = Math.ceil(_salt.length / 2);
+		var modu = Math.pow(2, 31) - 1;
+		var salt = Math.round(Math.random() * 1000000000) % 100000000;
+		prand += salt;
+		while(prand.length > 10) {
+			prand = (parseInt(prand.substring(0, 10),10) + parseInt(prand.substring(10, prand.length),10)).toString();
 		}
-		return ret;
+		prand = (mult * prand + incr) % modu;
+		var enc_chr = "";
+		var enc_str = "";
+		for(i=0; i<str.length; i++) {
+			enc_chr = parseInt(str.charCodeAt(i) ^ Math.floor((prand / modu) * 255),10);
+			if(enc_chr < 16) {
+				enc_str += "0" + enc_chr.toString(16);
+			} else enc_str += enc_chr.toString(16);
+			prand = (mult * prand + incr) % modu;
+		}
+		salt = salt.toString(16);
+		while(salt.length < 8)salt = "0" + salt;
+		enc_str += salt;
+		return enc_str;
 	}
-}
 
-function localdata_remove (item,key) {
-	var ret = localStorage.getItem(item);
-	if (ret !== null) {
-		if (typeof(key) !== 'undefined') {
-			ret = decrypt_str(ret);
+	/// decrypt a string
+	function _decrypt_str(str) {
+		var prand = "",
+				i;
+		for(i=0; i<_salt.length; i++) {
+			prand += _salt.charCodeAt(i).toString();
+		}
+		var sPos = Math.floor(prand.length / 5);
+		var mult = parseInt(prand.charAt(sPos) + prand.charAt(sPos*2) + prand.charAt(sPos*3) + prand.charAt(sPos*4) + prand.charAt(sPos*5),10);
+		var incr = Math.round(_salt.length / 2);
+		var modu = Math.pow(2, 31) - 1;
+		var salt = parseInt(str.substring(str.length - 8, str.length), 16);
+		str = str.substring(0, str.length - 8);
+		prand += salt;
+		while(prand.length > 10) {
+			prand = (parseInt(prand.substring(0, 10),10) + parseInt(prand.substring(10, prand.length),10)).toString();
+		}
+		prand = (mult * prand + incr) % modu;
+		var enc_chr = "";
+		var enc_str = "";
+		for(i=0; i<str.length; i+=2) {
+			enc_chr = parseInt(parseInt(str.substring(i, i+2), 16) ^ Math.floor((prand / modu) * 255),10);
+			enc_str += String.fromCharCode(enc_chr);
+			prand = (mult * prand + incr) % modu;
+		}
+		return enc_str;
+	}
+	//get value & set property
+	o.attr = function (item,key,data) {
+		if (typeof(item) === 'undefined') return null;
+		var ret = localStorage.getItem(item);
+		if (ret) {
+			ret = _decrypt_str(ret);
 			ret = decodeURIComponent(ret);
 			ret = JSON.parse(ret);
-			delete ret[key];
-			ret = encodeURIComponent(JSON.stringify(ret));
-			ret = encrypt_str(ret);
-			localStorage.setItem(item,ret);
-		} else{
-			localStorage.removeItem(item);
+			if (typeof(key) !== 'undefined') {
+				if (typeof(data) !== 'undefined') {
+					ret = ret || {};
+					ret[key] = data;
+					ret = encodeURIComponent(JSON.stringify(ret));
+					ret = _encrypt_str(ret);
+					localStorage.setItem(item,ret);
+					return data;
+				} else {
+					ret = ret[key];
+				}
+			}
 		}
-	}
-}
+		return ret;
+	};
 
-/// encrypt a string 
-function encrypt_str(str) {
-	var prand = "",
-			i;
-	for(i=0; i<_salt.length; i++) {
-		prand += _salt.charCodeAt(i).toString();
-	}
-	var sPos = Math.floor(prand.length / 5);
-	var mult = parseInt(prand.charAt(sPos) + prand.charAt(sPos*2) + prand.charAt(sPos*3) + prand.charAt(sPos*4) + prand.charAt(sPos*5),10);
-	var incr = Math.ceil(_salt.length / 2);
-	var modu = Math.pow(2, 31) - 1;
-	var salt = Math.round(Math.random() * 1000000000) % 100000000;
-	prand += salt;
-	while(prand.length > 10) {
-		prand = (parseInt(prand.substring(0, 10),10) + parseInt(prand.substring(10, prand.length),10)).toString();
-	}
-	prand = (mult * prand + incr) % modu;
-	var enc_chr = "";
-	var enc_str = "";
-	for(i=0; i<str.length; i++) {
-		enc_chr = parseInt(str.charCodeAt(i) ^ Math.floor((prand / modu) * 255),10);
-		if(enc_chr < 16) {
-			enc_str += "0" + enc_chr.toString(16);
-		} else enc_str += enc_chr.toString(16);
-		prand = (mult * prand + incr) % modu;
-	}
-	salt = salt.toString(16);
-	while(salt.length < 8)salt = "0" + salt;
-	enc_str += salt;
-	return enc_str;
-}
+	//set data
+	o.set = function  (key,value) {
+		if (key) {
+			value = encodeURIComponent(JSON.stringify(value));
+			value = _encrypt_str(value);
+			localStorage.setItem(key,value);
+		}
+	};
 
-/// decrypt a string
-function decrypt_str(str) {
-	var prand = "",
-			i;
-	for(i=0; i<_salt.length; i++) {
-		prand += _salt.charCodeAt(i).toString();
-	}
-	var sPos = Math.floor(prand.length / 5);
-	var mult = parseInt(prand.charAt(sPos) + prand.charAt(sPos*2) + prand.charAt(sPos*3) + prand.charAt(sPos*4) + prand.charAt(sPos*5),10);
-	var incr = Math.round(_salt.length / 2);
-	var modu = Math.pow(2, 31) - 1;
-	var salt = parseInt(str.substring(str.length - 8, str.length), 16);
-	str = str.substring(0, str.length - 8);
-	prand += salt;
-	while(prand.length > 10) {
-		prand = (parseInt(prand.substring(0, 10),10) + parseInt(prand.substring(10, prand.length),10)).toString();
-	}
-	prand = (mult * prand + incr) % modu;
-	var enc_chr = "";
-	var enc_str = "";
-	for(i=0; i<str.length; i+=2) {
-		enc_chr = parseInt(parseInt(str.substring(i, i+2), 16) ^ Math.floor((prand / modu) * 255),10);
-		enc_str += String.fromCharCode(enc_chr);
-		prand = (mult * prand + incr) % modu;
-	}
-	return enc_str;
-}
+	//decrypt data
+	o.decrypt = function  (data) {
+		if (data) {
+			data = _decrypt_str(data);
+			data = decodeURIComponent(data);
+			data = JSON.parse(data);
+			return data;
+		} else {
+			return undefined;
+		}
+	};
+
+	return o;
+})();
 
 //notification
 function push_notification (data) {
@@ -192,7 +192,7 @@ function __loginKaoqin (config) {
 		end = config.htmlstr.indexOf('"',start),
 		cookie = config.htmlstr.substring(start,end),
 		tmp = "KEY" + tiket,
-		usrinfo = config.account || localdata_attr('account','default');
+		usrinfo = config.account || ls.attr('account','default');
 	login_data[tmp] = "";
 	login_data["neusoft_key"] = "ID" + tiket + "PWD" + tiket;
 	tmp = 'ID' + cookie;
@@ -220,17 +220,5 @@ function formatDate (date) {
 			date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ' ' + days[date.getDay()];
 	} else{
 		return '';
-	}
-}
-
-//decrypt data
-function decryptData (data) {
-	if (data) {
-		data = decrypt_str(data);
-		data = decodeURIComponent(data);
-		data = JSON.parse(data);
-		return data;
-	} else {
-		return null;
 	}
 }

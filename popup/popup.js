@@ -166,7 +166,7 @@ $(function  ($) {
 		var nickname = '',
 			today = '',
 			dd = new ChineseCalendar();
-		nickname = localdata_attr('account','default');
+		nickname = ls.attr('account','default');
 		nickname = nickname ? nickname['nickname'] : undefined;
 		nickname = (undefined === nickname) ?　'你还有添加账户呢，赶紧设置吧！' : nickname + '！';
 		today = '今天是' + dd.solarDay2() + ',' +　dd.weekday() + '.';

@@ -13,225 +13,225 @@
 		</div>
 		<div class="arrow"></div>
 		<ul class="nav">
-			<li><a href="#accounts">Account</a></li>
-			<li><a href="#settings">Auto-punch</a></li>
-			<li><a href="#kaoqin-log">Logs</a></li>
-			<li><a href="#about">About</a></li>
-			<li><a href="#feedback">Feedback</a></li>
+			<li data="#accounts">Account</li>
+			<li data="#settings">Auto-punch</li>
+			<li data="#kaoqin-log">Logs</li>
+			<li data="#about">About</li>
+			<li data="#feedback">Feedback</li>
 		</ul>
 	</div>
+	<section id="accounts">
+		<div class="setting-item">
+			<div class="title">
+				Account settings
+			</div>
+			<div class="setting-content">
+				<div class="input">
+					<label class="span-1" for="nickname">昵称</label>
+					<input type="text" id="nickname" placeholder="昵称">
+					<span class="warning"></span>
+				</div>
+				<div class="input">
+					<label class="span-1" for="username">用户名</label>
+					<input type="text" id="username" placeholder="您的用户名">
+					<span class="warning"></span>
+				</div>
+				<div class="input">
+					<label class="span-1" for="password">密码</label>
+					<input type="password" id="password" placeholder="登陆密码">
+					<span class="warning"></span>
+				</div>
+				<div class="input">
+					<input type="button" class="pull-span-1 btn btn-info" id="save-account" value="保存">
+					<span class="info"></span>
+				</div>
+			</div>
+		</div>
+	</section>
+	<section id="settings">
+		<div class="tips" id="s-tip">
+			
+		</div>
+		<div class="setting-item">
+			<div class="title">
+				Configure auto-punch
+			</div>
+			<div class="setting-content">
+				<div class="input">
+					<input type="checkbox" id="enable-autocheckin" class="marin-span-1">
+					<label for="enable-autocheckin">启用自动打卡</label>
+				</div>
+				<div class="input">
+					<label class="span-1" for="checkin-type">签到类型</label>
+					<select id="checkin-type">
+						<option value="1">自动签到</option>
+						<option value="2">自动签退</option>
+						<option value="3">自动签到签退</option>
+					</select>
+					<label><input type="checkbox" id="noweekend">周末不签到</label>
+				</div>
+				<fieldset id="checkin">
+					<legend>签到时间</legend>
+					<div class="input checkin">
+						<label class="span-1">公司签到时间</label>
+						<input type="text" id="inhour">时
+						<input type="text" id="inminminute">分~
+						<input type="text" id="inmaxminute">分
+					</div>
+					<div class="input checkin">
+						<label class="span-1" for="inrange">自动签到时间区间</label>
+						<div class="checkin-range">
+							<div class="range-tip">从公司最早签到时间开始</div>
+							<input type="text" id="inrange">分中内签到
+						</div>
+					</div>
+				</fieldset>
+				<fieldset id="checkout">
+					<legend>签退时间</legend>
+					<div class="input checkin">
+						<label class="span-1">公司签退时间</label>
+						<input type="text" id="outhour">时
+						<input type="text" id="outminminute">分~
+						<input type="text" id="outmaxminute">分
+					</div>
+					<div class="input checkin">
+						<label class="span-1" for="outrange">自动签退时间区间</label>
+						<div class="checkin-range">
+							<div class="range-tip">从公司最早签退时间开始</div>
+							<input type="text" id="outrange">分中内打卡
+						</div>
+					</div>
+				</fieldset>
+				<div class="input">
+					<button class="pull-span-1 btn btn-info" id="save-settings">保存</button>
+					<span class="info"></span>
+				</div>
+			</div>
+		</div>
+		<div class="setting-item">
+			<div class="title">
+				Notice
+			</div>
+			<div class="setting-content">
+				<ol class="ol-about">
+					<li class="error">
+						本人不保证本扩展相关功能在任何时候都有效,请不要过分依赖本扩展.因使用本扩展所带来的任何风险由个人承担,本人概不负责.
+					</li>
+					<li>
+						如果不需要自动打卡,可以取消选中“启用自动打卡”,再保存.如果需要,则需保持浏览器一直开启.
+					</li>
+					<li>
+						打卡时间是在输入的时间范围内,再使用自动签到/签退时间区间来随机生成的.
+					</li>
+					<li>
+						在打卡时间内,如果已经打卡则不会重复打卡.如果已经超过了打卡时间,也不会打卡.如果打开浏览器的时间正好在打卡时间范围内,而且还未打卡,则会立即自动打卡.
+					</li>
+					<li>
+						如果需要周末打卡,请取消选中“周末不签到”并保存. <span class="error">请注意节假日或者加班是否启用自动打卡.</span> 
+					</li>
+				</ol>
+			</div>
+		</div>
+	</section>
+	<section id="kaoqin-log">
+		<div class="setting-item">
+			<div class="title">
+				Log of auto-punch
+			</div>
+			<div class="setting-content">
+				<div class="log-wrapper">
+					<div class="clear-log-wrapper">
+						<span class="tips">只显示最近100条记录</span><button class="btn btn-warning" id="clear-log">清空日志</button>
+					</div>
+					<div id="table-log" class="table-log"></div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<section id="about" class="about">
+		<div class="setting-item">
+			<div class="title">
+				About
+			</div>
+			<div class="setting-content">
+				本扩展为Saiya业余完成.<br>
+				本扩展可以实现以下功能：
+				<ol class="ol-about">
+					<li>
+						一键登录Neusoft常用网站
+						<p>包括考勤,日报,EHR,Portal</p>
+					</li>
+					<li>
+						自动打卡
+						<p>可以自动签到签退,并可以设定周末不打卡.所有打卡相关的记录均可以在选项页面中的“打卡日志”中查看到.</p>
+					</li>
+				</ol>
+				本扩展已开源,扩展官网：<a href="http://app.evecalm.com/neuhelper" target="_blank">http://app.evecalm.com/neuhelper </a> <br>
+				我的个人网站：<a href="http://www.evecalm.com" target="_blank"> 夏影 http://www.evecalm.com</a>
+			</div>
+		</div>
+		<div class="setting-item">
+			<div class="title">
+				Announcement
+			</div>
+			<div class="setting-content">
+				<p class="error">本人不保证本扩展相关功能在任何时候都有效,请不要过分依赖本扩展.因使用本扩展所带来的任何风险由个人承担,本人概不负责.</p>
+				<p>账户密码信息以加密形式存放在浏览器本地,不会出现隐私泄露问题.</p>
+			</div>
+		</div>
+		<div class="setting-item">
+			<div class="title">
+				Changelog
+			</div>
+			<div class="setting-content">
+				<ol class="ol-about">
+					<li>
+						V 0.35 @2013/04/30
+						<p>优化代码逻辑,移除冗余代码,对界面做了细微改动.</p>
+					</li>
+					<li>
+						V 0.34 @2013/04/28
+						<p>增加反馈页.为了和谐,已将相关设置更改为英文.</p>
+					</li>
+					<li>
+						V 0.33 @2013/04/26
+						<p>优化打卡逻辑,美化了扩展Popup菜单并添加了农历</p>
+					</li>
+					<li>
+						V 0.32 @2013/04/25
+						<p>修正了更新到最新版Chrome后一键登录不可用的问题</p>
+					</li>
+					<li>
+						V 0.31 @2013/04/24
+						<p>修正无法记录打卡日志的问题</p>
+					</li>
+					<li>
+						V 0.30 @2013/04/23
+						<p>增加自签退功能,并可以设置周末不打卡</p>
+					</li>
+					<li>
+						V 0.20 @2013/04/10
+						<p>增加自动签到功能</p>
+					</li>
+					<li>
+						V 0.10 @2013/01/08
+						<p>增加一键登录考勤、日报、EHR、Portal的功能</p>
+					</li>
+				</ol>
+			</div>
+		</div>
+	</section>
+	<section id="feedback">
+		<div class="setting-item">
+			<div class="title">
+				Feedback <small>(<a href="https://cn.gravatar.com/" target="_blank">设置你的头像</a>)</small>
+			</div>
+			<div class="setting-content">
+				<iframe id="feedbak-frame" class="feedbak-frame" src="" scrolling="no" frameborder="0"></iframe>
+			</div>
+		</div>
+	</section>
 	<div class="contents">
-		<div id="accounts">
-			<div class="setting-item">
-				<div class="title">
-					Account settings
-				</div>
-				<div class="setting-content">
-					<div class="input">
-						<label class="span-1" for="nickname">昵称</label>
-						<input type="text" id="nickname" placeholder="昵称">
-						<span class="warning"></span>
-					</div>
-					<div class="input">
-						<label class="span-1" for="username">用户名</label>
-						<input type="text" id="username" placeholder="您的用户名">
-						<span class="warning"></span>
-					</div>
-					<div class="input">
-						<label class="span-1" for="password">密码</label>
-						<input type="password" id="password" placeholder="登陆密码">
-						<span class="warning"></span>
-					</div>
-					<div class="input">
-						<input type="button" class="pull-span-1 btn btn-info" id="save-account" value="保存">
-						<span class="info"></span>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="settings">
-			<div class="tips" id="s-tip">
-				
-			</div>
-			<div class="setting-item">
-				<div class="title">
-					Configure auto-punch
-				</div>
-				<div class="setting-content">
-					<div class="input">
-						<input type="checkbox" id="enable-autocheckin" class="marin-span-1">
-						<label for="enable-autocheckin">启用自动打卡</label>
-					</div>
-					<div class="input">
-						<label class="span-1" for="checkin-type">签到类型</label>
-						<select id="checkin-type">
-							<option value="1">自动签到</option>
-							<option value="2">自动签退</option>
-							<option value="3">自动签到签退</option>
-						</select>
-						<label><input type="checkbox" id="noweekend">周末不签到</label>
-					</div>
-					<fieldset id="checkin">
-						<legend>签到时间</legend>
-						<div class="input checkin">
-							<label class="span-1">公司签到时间</label>
-							<input type="text" id="inhour">时
-							<input type="text" id="inminminute">分~
-							<input type="text" id="inmaxminute">分
-						</div>
-						<div class="input checkin">
-							<label class="span-1" for="inrange">自动签到时间区间</label>
-							<div class="checkin-range">
-								<div class="range-tip">从公司最早签到时间开始</div>
-								<input type="text" id="inrange">分中内签到
-							</div>
-						</div>
-					</fieldset>
-					<fieldset id="checkout">
-						<legend>签退时间</legend>
-						<div class="input checkin">
-							<label class="span-1">公司签退时间</label>
-							<input type="text" id="outhour">时
-							<input type="text" id="outminminute">分~
-							<input type="text" id="outmaxminute">分
-						</div>
-						<div class="input checkin">
-							<label class="span-1" for="outrange">自动签退时间区间</label>
-							<div class="checkin-range">
-								<div class="range-tip">从公司最早签退时间开始</div>
-								<input type="text" id="outrange">分中内打卡
-							</div>
-						</div>
-					</fieldset>
-					<div class="input">
-						<button class="pull-span-1 btn btn-info" id="save-settings">保存</button>
-						<span class="info"></span>
-					</div>
-				</div>
-			</div>
-			<div class="setting-item">
-				<div class="title">
-					Notice
-				</div>
-				<div class="setting-content">
-					<ol class="ol-about">
-						<li class="error">
-							本人不保证本扩展相关功能在任何时候都有效,请不要过分依赖本扩展.因使用本扩展所带来的任何风险由个人承担,本人概不负责.
-						</li>
-						<li>
-							如果不需要自动打卡,可以取消选中“启用自动打卡”,再保存.如果需要,则需保持浏览器一直开启.
-						</li>
-						<li>
-							打卡时间是在输入的时间范围内,再使用自动签到/签退时间区间来随机生成的.
-						</li>
-						<li>
-							在打卡时间内,如果已经打卡则不会重复打卡.如果已经超过了打卡时间,也不会打卡.如果打开浏览器的时间正好在打卡时间范围内,而且还未打卡,则会立即自动打卡.
-						</li>
-						<li>
-							如果需要周末打卡,请取消选中“周末不签到”并保存. <span class="error">请注意节假日或者加班是否启用自动打卡.</span> 
-						</li>
-					</ol>
-				</div>
-			</div>
-		</div>
-		<div id="kaoqin-log">
-			<div class="setting-item">
-				<div class="title">
-					Log of auto-punch
-				</div>
-				<div class="setting-content">
-					<div class="log-wrapper">
-						<div class="clear-log-wrapper">
-							<span class="tips">只显示最近100条记录</span><button class="btn btn-warning" id="clear-log">清空日志</button>
-						</div>
-						<div id="table-log" class="table-log"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="about" class="about">
-			<div class="setting-item">
-				<div class="title">
-					About
-				</div>
-				<div class="setting-content">
-					本扩展为Saiya业余完成.<br>
-					本扩展可以实现以下功能：
-					<ol class="ol-about">
-						<li>
-							一键登录Neusoft常用网站
-							<p>包括考勤,日报,EHR,Portal</p>
-						</li>
-						<li>
-							自动打卡
-							<p>可以自动签到签退,并可以设定周末不打卡.所有打卡相关的记录均可以在选项页面中的“打卡日志”中查看到.</p>
-						</li>
-					</ol>
-					本扩展已开源,扩展官网：<a href="http://app.evecalm.com/neuhelper" target="_blank">http://app.evecalm.com/neuhelper </a> <br>
-					我的个人网站：<a href="http://www.evecalm.com" target="_blank"> 夏影 http://www.evecalm.com</a>
-				</div>
-			</div>
-			<div class="setting-item">
-				<div class="title">
-					Announcement
-				</div>
-				<div class="setting-content">
-					<p class="error">本人不保证本扩展相关功能在任何时候都有效,请不要过分依赖本扩展.因使用本扩展所带来的任何风险由个人承担,本人概不负责.</p>
-					<p>账户密码信息以加密形式存放在浏览器本地,不会出现隐私泄露问题.</p>
-				</div>
-			</div>
-			<div class="setting-item">
-				<div class="title">
-					Changelog
-				</div>
-				<div class="setting-content">
-					<ol class="ol-about">
-						<li>
-							V 0.35 @2013/04/29
-							<p>优化代码逻辑,移除冗余代码,对界面做了细微改动.</p>
-						</li>
-						<li>
-							V 0.34 @2013/04/28
-							<p>增加反馈页.为了和谐,已将相关设置更改为英文.</p>
-						</li>
-						<li>
-							V 0.33 @2013/04/26
-							<p>优化打卡逻辑,美化了扩展Popup菜单并添加了农历</p>
-						</li>
-						<li>
-							V 0.32 @2013/04/25
-							<p>修正了更新到最新版Chrome后一键登录不可用的问题</p>
-						</li>
-						<li>
-							V 0.31 @2013/04/24
-							<p>修正无法记录打卡日志的问题</p>
-						</li>
-						<li>
-							V 0.30 @2013/04/23
-							<p>增加自签退功能,并可以设置周末不打卡</p>
-						</li>
-						<li>
-							V 0.20 @2013/04/10
-							<p>增加自动签到功能</p>
-						</li>
-						<li>
-							V 0.10 @2013/01/08
-							<p>增加一键登录考勤、日报、EHR、Portal的功能</p>
-						</li>
-					</ol>
-				</div>
-			</div>
-		</div>
-		<div id="feedback">
-			<div class="setting-item">
-				<div class="title">
-					Feedback
-				</div>
-				<div class="setting-content">
-					<iframe id="feedbak-frame" class="feedbak-frame" src="" scrolling="no" frameborder="0"></iframe>
-				</div>
-			</div>
-		</div>
 	</div>
 	<script type="text/javascript" src="/basic/jquery.min.js"></script>
 	<script type="text/javascript" src="/basic/basic.js"></script>

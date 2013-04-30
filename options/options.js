@@ -103,7 +103,7 @@ function clearSettingTip () {
 }
 
 function initSettingTab () {
-	var settings = localdata_attr('settings'),
+	var settings = ls.attr('settings'),
 		checkintime,
 		checkouttime,
 		checktype,
@@ -174,20 +174,19 @@ $(function  ($) {
 	var hash = window.location.hash ? window.location.hash : '#accounts',
 		feedback;
 
-	$('.sidebar .nav li a').on('click',function  () {
+	$('.sidebar .nav li').on('click',function  () {
 		var target;
 		if ($(this).hasClass('current')) {
 			return;
 		}
-		target = $(this).attr('href');
-		$('.sidebar .nav li a.current').removeClass('current');
-		$('.contents div.selected').removeClass('selected');
+		target = $(this).attr('data');
+		$('.sidebar .nav li.current').removeClass('current');
 		$(this).addClass('current');
-		$(target).addClass('selected');
+		window.location.hash = target;
 		target = target.substring(1);
 		switch(target) {
 			case 'accounts':
-				var account = localdata_attr('account','default');
+				var account = ls.attr('account','default');
 				if (account) {
 					$('#nickname').val(account.nickname);
 					$('#username').val(account.username);
@@ -211,7 +210,7 @@ $(function  ($) {
 		}
 	});
 
-	$('.sidebar .nav li a[href="' + hash + '"]')[0].click();
+	$('.sidebar .nav li[data="' + hash + '"]')[0].click();
 
 	$('#accounts').on('focus','input[type="text"],input[type="password"]',function  () {
 		$(this).removeClass('warning');
@@ -245,9 +244,7 @@ $(function  ($) {
 					}
 					account['default'] = config.account;
 					account['available'] = available;
-					account = encodeURIComponent(JSON.stringify(account));
-					account = encrypt_str(account);
-					localStorage.setItem('account',account);
+					ls.set('account',account);
 					config.savebtn.attr('disabled',false);
 					config.savebtn.text('保存',false);
 					setTimeout(function () {
@@ -266,7 +263,7 @@ $(function  ($) {
 			checkout = false,
 			checktype = $('#checkin-type').val(),
 			noweekend = $('#noweekend').prop('checked'),
-			checktime = localdata_attr('settings') || {};
+			checktime = ls.attr('settings') || {};
 			checktime = checktime['checktime'] || {},
 			settings  = {};
 		checktype = parseInt(checktype,10);
@@ -325,9 +322,7 @@ $(function  ($) {
 		settings.checktype = checktype;
 		settings.noweekend = noweekend;
 		settings.checktime = checktime;
-		settings = encodeURIComponent(JSON.stringify(settings));
-		settings = encrypt_str(settings);
-		localStorage.setItem('settings',settings);
+		ls.set('settings',settings);
 		$(this).next().removeClass('warning').addClass('info').html('保存成功！').fadeIn();
 		clearSettingTip();
 	});

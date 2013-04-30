@@ -32,7 +32,7 @@ function doAttendance (config) {
 		div = null;
 		start = config.htmlstr.indexOf('<body>') + 6,
 		end = config.htmlstr.indexOf('</body>'),
-		settings = localdata_attr('settings'),
+		settings = ls.attr('settings'),
 		checktype = 0,
 		htmlstr = '',
 		d = new Date(),
@@ -64,7 +64,7 @@ function doAttendance (config) {
 				.replace(/<img[^>]+>/g,'') //remove img tag
 				.replace(/background="[^"]+"/g,'');//remove background image
 	if (-1 == htmlstr.indexOf('name="attendanceForm"')) {
-		localdata_attr('settings','checktype',0);
+		ls.attr('account','available',false);
 		push_notification({body:"用户名密码不好使啊！请在选项页中再次输入您的用户名及密码！",title:'账户通知'});
 		return;
 	}
@@ -220,7 +220,7 @@ function setCheckinoutTimer (timesetting,checked) {
 		hour = d.getHours(),
 		minute = d.getMinutes(),
 		time = timesetting.hour,
-		noweekend = localdata_attr('settings','noweekend'),
+		noweekend = ls.attr('settings','noweekend'),
 		newTime,
 		log;
 	clearTimeout(timer);
@@ -265,8 +265,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (method) {
 		switch(method) {
 			case 'getAccountInfo':
-				if (localdata_attr('account','available')) {
-					sendResponse(localdata_attr('account','default'));
+				if (ls.attr('account','available')) {
+					sendResponse(ls.attr('account','default'));
 				} else {
 					push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
 					sendResponse({'available':false});
@@ -277,12 +277,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				sendResponse({});
 				break;
 			case 'kqdown':
-				push_notification({title:'系统通知',body:'考勤网站挂了，自动打卡已取消。',time:false});
-				if (localdata_attr('settings','checktype')) {
+				if (ls.attr('settings','checktype')) {
 					log = '无法正常访问考勤网站，已取消自动打卡';
 				} else {
 					log = '无法正常访问考勤网站.';
 				}
+				push_notification({title:'系统通知',body:log,time:false});
 				clearTimeout(timer);
 				logmsg({'log':log,'type':'error'});
 				sendResponse({});
@@ -296,12 +296,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function init () {
-	var account = localdata_attr('account','default');
+	var account = ls.attr('account','default');
 	if (account && (typeof account == 'object')) {
-		if (!localdata_attr('account','available')) {
+		if (!ls.attr('account','available')) {
 			push_notification({title:'账户通知',body:'账户配置不正确，请到选项中的账户管理页中填写正确的用户名密码。'});
 		} else {
-			if(localdata_attr('settings','checktype')){
+			if(ls.attr('settings','checktype')){
 				autoCheckInOut();
 			}
 		}
@@ -322,8 +322,8 @@ window.addEventListener("storage", function  (event) {
 	if (event.oldValue == event.newValue) {
 		return;
 	}
-	oldValue = decryptData(event.oldValue);
-	newValue = decryptData(event.newValue);
+	oldValue = ls.decrypt(event.oldValue);
+	newValue = ls.decrypt(event.newValue);
 	if (event.key == 'settings') {
 		if (!newValue.checktype) {
 			if (oldValue && (oldValue.checktype != newValue.checktype)) {
@@ -332,7 +332,7 @@ window.addEventListener("storage", function  (event) {
 			}
 			return;
 		}
-		available = localdata_attr('account','available');
+		available = ls.attr('account','available');
 		if (!available) {
 			logmsg({'log':'已更新打卡设置，但因账户设置错误，自动打卡启用失败。','type':'warning'});
 			clearTimeout(timer);
@@ -364,7 +364,7 @@ window.addEventListener("storage", function  (event) {
 		clearTimeout(timer);
 		autoCheckInOut();
 	} else if (event.key == 'account') {
-		checktype = localdata_attr('settings','checktype');
+		checktype = ls.attr('settings','checktype');
 		if (newValue.available) {
 			logmsg({log:'更新用户信息成功，当前用户名为' + newValue['default'].username});
 			if ((!oldValue || !oldValue.available) && checktype) {
