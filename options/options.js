@@ -225,8 +225,8 @@ $(function  ($) {
 
 	$('#save-account').on('click',function  () {
 		if(check_inputs($(this))){
-			$(this).text('正在验证您的账户...').attr('disabled',true);
 			var data = {};
+			$(this).val('正在验证您的账户...').attr('disabled',true);
 			data['username'] = $.trim($('#username').val());
 			data['password'] = $.trim($('#password').val());
 			data['nickname'] = $.trim($('#nickname').val());
