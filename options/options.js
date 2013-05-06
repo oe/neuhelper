@@ -246,7 +246,7 @@ $(function  ($) {
 					account['available'] = available;
 					ls.set('account',account);
 					config.savebtn.attr('disabled',false);
-					config.savebtn.text('保存',false);
+					config.savebtn.val('保存',false);
 					setTimeout(function () {
 						config.savebtn.next().fadeOut(function  () {
 							$(this).removeClass('warning').addClass('info');
