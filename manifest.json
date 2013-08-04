@@ -1,6 +1,6 @@
 {
 	"name": "Neuhelper",
-	"version": "0.37",
+	"version": "0.40",
 	"manifest_version": 2,
 	"icons": {
 		"16": "img/icon16.png",

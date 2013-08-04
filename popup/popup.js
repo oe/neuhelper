@@ -1,12 +1,12 @@
 
 $(function  ($) {
-	function  inject_js(tab) {
-		chrome.tabs.executeScript(tab.id,{file: "popup/login.js"});
-	}
 
 	$('#fun').on('click','span',function  () {
 		var data = $(this).attr('data');
-		chrome.tabs.create({url:urls[data]['login_url']},inject_js);
+		chrome.tabs.create({url:urls[data]['login_url'],active: false},function  (tab) {
+			chrome.tabs.executeScript(tab.id,{file: "popup/login.js"});
+			chrome.tabs.update(tab.id,{active:true});
+		});
 	});
 
 	function ChineseCalendar(dateObj){
@@ -162,7 +162,7 @@ $(function  ($) {
 		};
 	}
 
-	function init () {
+	;(function init () {
 		var nickname = '',
 			today = '',
 			dd = new ChineseCalendar();
@@ -172,7 +172,6 @@ $(function  ($) {
 		today = '今天是' + dd.solarDay2() + ',' +　dd.weekday() + '.';
 		$('#nickname').text(nickname);
 		$('#cnday').text(today);
-	}
-	init();
+	})()
 });
 
